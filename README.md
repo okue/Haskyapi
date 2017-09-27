@@ -18,6 +18,6 @@ http://localhost:8080
 
 ## Now
 
-- [Simple TODO application](http://13.113.236.74:8080/firebase-todo/index.html) works on Hskyapi.
+- [Simple TODO application](http://13.113.236.74:8080/v2/firebase-todo/index.html) works on Hskyapi.
 - [html/index.html](http://13.113.236.74:8080/index.html)
 - [html/page.html](http://13.113.236.74:8080/page.html)
