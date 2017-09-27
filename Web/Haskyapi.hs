@@ -62,7 +62,12 @@ startSocket soc = forever $ do
 
 data Status = OK
             | NotFound
-            deriving (Show)
+            | Moved
+
+instance Show Status where
+  show OK = "200 OK"
+  show NotFound = "404 Not Found"
+  show Moved = "301 Moved Permanently"
 
 doResponse :: Socket -> IO ()
 doResponse conn = do
@@ -80,9 +85,12 @@ doResponse conn = do
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn Cplain endpoint qry mtd
     (GET, path) -> do
-      let cpath = complement path
-      html <- C.readFile $ "./html" ++ cpath
-      sender OK conn ct html
+      case complement path of
+        Just cpath -> do
+          html <- C.readFile $ "./html" ++ cpath
+          sender OK conn ct html
+        Nothing ->
+          redirect conn path
       `catch`
         \(SomeException e) -> do
           print e
@@ -90,18 +98,33 @@ doResponse conn = do
     (POST, _) ->
       sender OK conn ct $ C.pack "Please POST request to /api"
     _ ->
-      sender NotFound conn ct $ C.pack "404 Not Found"
+      sender NotFound conn Chtml $ C.pack "404 Not Found"
 
-complement :: String -> String
+complement :: String -> Maybe String
 complement path =
-  let fl = last (S.splitOn "/" path) in
-  if length (S.splitOn "." fl) > 1
-    then path
-    else path ++ "/index.html"
+  let basename = last (S.splitOn "/" path) in
+  case basename of
+    "" -> Just $ path ++ "index.html"
+    _
+      | length (S.splitOn "." basename) > 1 -> Just path
+      | otherwise -> Nothing
+
+redirect :: Socket -> String -> IO ()
+redirect conn path = do
+  sendHeader conn Moved Chtml
+  print path
+  send conn $ C.pack "Location: /vv/\r\n"
+  send conn $ C.pack "\r\n"
+  return ()
+  `catch`
+    (\(SomeException e) -> print e)
+  `finally`
+    close conn >> putStrLn ("close conn " ++ show conn)
 
 sender :: Status -> Socket -> ContentType -> C.ByteString -> IO ()
 sender st conn ct msg = do
-  sendHeader st conn ct
+  sendHeader conn st ct
+  send conn $ C.pack "\r\n"
   send conn $ msg
   send conn $ C.pack "\r\n"
   return ()
@@ -112,7 +135,8 @@ sender st conn ct msg = do
 
 apisender :: Status -> Socket -> ContentType -> Endpoint -> Query -> Method -> IO ()
 apisender st conn ct endpoint qry mtd = do
-  sendHeader st conn ct
+  sendHeader conn st ct
+  send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
     Nothing         -> send conn $ C.pack "There is no valid api."
     Just (_,_,func) -> send conn $ C.pack $ func qry
@@ -123,14 +147,11 @@ apisender st conn ct endpoint qry mtd = do
   `finally`
     close conn >> putStrLn ("close conn " ++ show conn)
 
-sendHeader :: Status -> Socket -> ContentType -> IO Int
-sendHeader st conn ct = do
-  case st of
-    OK       -> send conn $ C.pack "HTTP/1.1 200 OK\r\n"
-    NotFound -> send conn $ C.pack "HTTP/1.1 404 Not Found\r\n"
+sendHeader :: Socket -> Status -> ContentType -> IO Int
+sendHeader conn st ct = do
+  send conn $ C.pack $ "HTTP/1.1 "      ++ show st ++ "\r\n"
   send conn $ C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
-  send conn $ C.pack "Server: Haskyapi\r\n"
-  send conn $ C.pack "\r\n"
+  send conn $ C.pack   "Server: Haskyapi\r\n"
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
 rlookup _ [] = Nothing
