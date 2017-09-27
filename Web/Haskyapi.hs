@@ -104,8 +104,10 @@ complement :: String -> Maybe String
 complement path =
   let basename = last (S.splitOn "/" path) in
   case basename of
+    -- path ends with '/'
     "" -> Just $ path ++ "index.html"
     _
+      -- basename has a file extension such as ".html"
       | length (S.splitOn "." basename) > 1 -> Just path
       | otherwise -> Nothing
 
@@ -113,7 +115,7 @@ redirect :: Socket -> String -> IO ()
 redirect conn path = do
   sendHeader conn Moved Chtml
   print path
-  send conn $ C.pack "Location: /vv/\r\n"
+  send conn $ C.pack $ "Location: " ++ path ++ "/\r\n"
   send conn $ C.pack "\r\n"
   return ()
   `catch`
