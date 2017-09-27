@@ -76,14 +76,14 @@ unitheader = Header {
 mkqry :: String -> (Endpoint, Query)
 mkqry tmp =
   let ep:qry' = S.splitOneOf "?&" tmp
-      qry     = map (split "") qry'
+      qry     = map (qsplit "") qry'
   in (ep, qry)
 
-split :: String -> String -> (String, String)
-split key "" = ("", "")
-split key (c:cs)
+qsplit :: String -> String -> (String, String)
+qsplit key "" = ("", "")
+qsplit key (c:cs)
   | c == '='  = (key, cs)
-  | otherwise = split (key++[c]) cs
+  | otherwise = qsplit (key++[c]) cs
 
 parseRqLine :: String -> Header -> Header
 parseRqLine str (Header hr hh hu ha hcl hct) =
@@ -138,4 +138,4 @@ toCType "js"    = Cjs
 toCType "plain" = Cplain
 toCType "jpeg"  = Cjpeg
 toCType "png"   = Cpng
-toCType  _      = Cplain
+toCType  _      = Chtml

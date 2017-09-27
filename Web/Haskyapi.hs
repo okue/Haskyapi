@@ -78,9 +78,10 @@ doResponse conn = do
       html <- C.readFile "./html/index.html"
       sender OK conn Chtml html
     (mtd, '/':'a':'p':'i':endpoint) ->
-      apisender OK conn ct endpoint qry mtd
+      apisender OK conn Cplain endpoint qry mtd
     (GET, path) -> do
-      html <- C.readFile $ "./html" ++ path
+      let cpath = complement path
+      html <- C.readFile $ "./html" ++ cpath
       sender OK conn ct html
       `catch`
         \(SomeException e) -> do
@@ -90,6 +91,13 @@ doResponse conn = do
       sender OK conn ct $ C.pack "Please POST request to /api"
     _ ->
       sender NotFound conn ct $ C.pack "404 Not Found"
+
+complement :: String -> String
+complement path =
+  let fl = last (S.splitOn "/" path) in
+  if length (S.splitOn "." fl) > 1
+    then path
+    else path ++ "/index.html"
 
 sender :: Status -> Socket -> ContentType -> C.ByteString -> IO ()
 sender st conn ct msg = do
