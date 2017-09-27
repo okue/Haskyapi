@@ -18,6 +18,6 @@ http://localhost:8080
 
 ## Now
 
-- [Simple TODO application](http://13.113.236.74:8080/v2/ftodo/index.html) works on Hskyapi.
-- [html/index.html](http://13.113.236.74:8080/index.html)
+- [Simple TODO application](http://13.113.236.74:8080/v2/ftodo/) works on Hskyapi.
+- [html/index.html](http://13.113.236.74:8080/)
 - [html/page.html](http://13.113.236.74:8080/page.html)
