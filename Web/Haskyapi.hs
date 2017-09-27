@@ -121,7 +121,7 @@ sendHeader st conn ct = do
     OK       -> send conn $ C.pack "HTTP/1.1 200 OK\r\n"
     NotFound -> send conn $ C.pack "HTTP/1.1 404 Not Found\r\n"
   send conn $ C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
-  send conn $ C.pack "Server: Hskyapi\r\n"
+  send conn $ C.pack "Server: Haskyapi\r\n"
   send conn $ C.pack "\r\n"
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
