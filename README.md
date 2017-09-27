@@ -14,7 +14,6 @@ http://localhost:8080
 ## TODO
 
 - [ ] How to use Database easily
-- [x] Successfully response of "http://localhost:8080/api/test2"
 
 ## Now
 

@@ -8,7 +8,7 @@ module Web.Haskyapi (
 
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
--- import Codec.Binary.UTF8.String as BUS
+import Codec.Binary.UTF8.String as B8
 import qualified Data.ByteString.Char8 as C
 import qualified Data.List.Split as S
 import qualified Data.List as L
@@ -141,7 +141,7 @@ apisender st conn ct endpoint qry mtd = do
   send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
     Nothing         -> send conn $ C.pack "There is no valid api."
-    Just (_,_,func) -> send conn $ C.pack $ func qry
+    Just (_,_,func) -> send conn $ C.pack . encodeString $ func qry
   send conn $ C.pack "\r\n"
   return ()
   `catch`
@@ -152,7 +152,7 @@ apisender st conn ct endpoint qry mtd = do
 sendHeader :: Socket -> Status -> ContentType -> IO Int
 sendHeader conn st ct = do
   send conn $ C.pack $ "HTTP/1.1 "      ++ show st ++ "\r\n"
-  send conn $ C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
+  send conn $ C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
   send conn $ C.pack   "Server: Haskyapi\r\n"
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
