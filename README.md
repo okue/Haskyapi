@@ -21,6 +21,7 @@ http://localhost:8080
 ## Now
 
 - [Simple TODO application](http://13.113.236.74:8080/v2/ftodo/) works on Hskyapi.
-- [html/index.html](http://13.113.236.74:8080/)
-- [html/page.html](http://13.113.236.74:8080/page.html)
-- [html/markdown-page.md](http://13.113.236.74:8080/markdown-page.md)
+- [/index.html](http://13.113.236.74:8080/)
+- [/page.html](http://13.113.236.74:8080/page.html)
+- [/markdown-page.md](http://13.113.236.74:8080/markdown-page.md)
+- [/api/title?url=https://github.com/okue/Haskyapi](http://13.113.236.74:8080/api/title?url=https://github.com/okue/Haskyapi)
