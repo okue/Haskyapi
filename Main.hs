@@ -9,7 +9,7 @@ import System.Environment (getArgs)
 -- import Foreign.Api
 
 htmls :: [FilePath]
-htmls = ["index.html", "page.html", "markdown-page.md", "logo.png"]
+htmls = ["index.html", "page.html", "markdown-page.md", "img/logo.png"]
 
 main :: IO ()
 main = do

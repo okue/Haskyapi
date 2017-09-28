@@ -21,7 +21,7 @@ import Control.Monad
 import Debug.Trace (trace)
 
 type Api      = (Method, Endpoint, ApiFunc)
-type ApiFunc  = Query -> String
+type ApiFunc  = Query -> IO String
 
 type Query    = [(String, String)]
 type Endpoint = String

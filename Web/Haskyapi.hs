@@ -150,7 +150,7 @@ apisender st conn ct endpoint qry mtd = do
   send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
     Nothing         -> send conn $ C.pack "There is no valid api."
-    Just (_,_,func) -> send conn $ C.pack . B8.encodeString $ func qry
+    Just (_,_,func) -> send conn . C.pack . B8.encodeString =<< func qry
   send conn $ C.pack "\r\n"
   return ()
   `catch`
