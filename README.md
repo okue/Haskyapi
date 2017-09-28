@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/FgappQ0.png" width="60%">
+<img src="https://raw.githubusercontent.com/okue/Haskyapi/master/html/img/logo.png" width="60%">
 
 ## What is Haskyapi ?
 
