@@ -8,10 +8,14 @@ module Web.Haskyapi (
 
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
-import Codec.Binary.UTF8.String as B8
-import qualified Data.ByteString.Char8 as C
+import qualified Codec.Binary.UTF8.String as B8
+import qualified Data.ByteString.Char8    as C
 import qualified Data.List.Split as S
-import qualified Data.List as L
+import qualified Data.List       as L
+import qualified Text.Markdown     as Md
+import qualified Data.Text.Lazy    as T
+import qualified Data.Text.Lazy.IO as T
+import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.LocalTime (utcToLocalTime, TimeZone(..))
 import Control.Concurrent
@@ -65,9 +69,9 @@ data Status = OK
             | Moved
 
 instance Show Status where
-  show OK = "200 OK"
+  show OK       = "200 OK"
   show NotFound = "404 Not Found"
-  show Moved = "301 Moved Permanently"
+  show Moved    = "301 Moved Permanently"
 
 doResponse :: Socket -> IO ()
 doResponse conn = do
@@ -85,11 +89,15 @@ doResponse conn = do
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn Cplain endpoint qry mtd
     (GET, path) -> do
-      case complement path of
-        Just cpath -> do
+      case (ct, complement path) of
+        (Cmarkdown, Just cpath) -> do
+          tmp <- T.readFile $ "./html" ++ cpath
+          let mdfile = renderHtml $ Md.markdown Md.def tmp
+          sender OK conn ct $ C.pack $ T.unpack mdfile
+        (_, Just cpath) -> do
           html <- C.readFile $ "./html" ++ cpath
           sender OK conn ct html
-        Nothing ->
+        (_, Nothing) ->
           redirect conn path
       `catch`
         \(SomeException e) -> do
@@ -141,7 +149,7 @@ apisender st conn ct endpoint qry mtd = do
   send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
     Nothing         -> send conn $ C.pack "There is no valid api."
-    Just (_,_,func) -> send conn $ C.pack . encodeString $ func qry
+    Just (_,_,func) -> send conn $ C.pack . B8.encodeString $ func qry
   send conn $ C.pack "\r\n"
   return ()
   `catch`

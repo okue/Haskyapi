@@ -11,7 +11,6 @@ libapi.so:
 main :
 	mkdir -p bin
 	ghc --make Main -L. -l$(O) -o $(TARGET)
-	make clean
 
 reset:
 	make clean
