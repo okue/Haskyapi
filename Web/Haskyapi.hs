@@ -93,7 +93,8 @@ doResponse conn = do
         (Cmarkdown, Just cpath) -> do
           tmp <- T.readFile $ "./html" ++ cpath
           let mdfile = renderHtml $ Md.markdown Md.def tmp
-          sender OK conn ct $ C.pack . B8.encodeString . T.unpack $ mdfile
+              aux b  = "<head><link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\" /></head><body>" ++ b ++ "</body>"
+          sender OK conn ct $ C.pack . B8.encodeString . aux . T.unpack $ mdfile
         (_, Just cpath) -> do
           html <- C.readFile $ "./html" ++ cpath
           sender OK conn ct html

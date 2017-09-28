@@ -23,3 +23,16 @@ nohup bin/haskyapictl > /dev/null 2>&1 &
 ```
 pkill haskyapictl
 ```
+
+## RESTful
+
+- `GET /entries`
+  - エントリー一覧を取得する
+- `POST /entries`
+  - エントリーを追加する
+- `GET /entries/$entry_id`
+  - 特定のエントリーを取得する
+- `PUT /entries/$entry_id`
+  - 特定のエントリーを置き換える
+- `DELTE /entries/$entry_id`
+  - 特定のエントリーを削除する
