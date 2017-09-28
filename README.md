@@ -16,6 +16,7 @@ http://localhost:8080
 ## TODO
 
 - [ ] How to use Database easily
+- [ ] Easily implement RESTful api
 
 ## Now
 
