@@ -28,8 +28,19 @@ type Endpoint = String
 
 data Method = GET 
             | POST
+            | PUT
+            | DELETE
+            | PATCH
             | Other
             deriving (Show, Eq)
+
+toMethod :: String -> Method
+toMethod "GET"    = GET
+toMethod "POST"   = POST
+toMethod "PUT"    = PUT
+toMethod "DELETE" = DELETE
+toMethod "PATCH"  = PATCH
+toMethod _        = Other
 
 data RqLine = RqLine {
                 method     :: Method,
@@ -88,11 +99,9 @@ qsplit key (c:cs)
 parseRqLine :: String -> Header -> Header
 parseRqLine str (Header hr hh hu ha hcl hct) =
   let mtd':tmp:_ = words str
-      (ep,qry) = mkqry tmp in
-  case mtd' of
-    "GET"  -> let mtd = RqLine {method=GET,   target=ep, parameters=qry} in Header mtd hh hu ha hcl hct
-    "POST" -> let mtd = RqLine {method=POST,  target=ep, parameters=qry} in Header mtd hh hu ha hcl hct
-    _      -> let mtd = RqLine {method=Other, target=ep, parameters=qry} in Header mtd hh hu ha hcl hct
+      (ep,qry) = mkqry tmp
+      mtd = RqLine {method=(toMethod mtd'), target=ep, parameters=qry}
+  in Header mtd hh hu ha hcl hct
 
 parse :: [String] -> Header
 parse []     = unitheader
@@ -125,13 +134,14 @@ data ContentType = Chtml
                  | Cmarkdown
 
 instance Show ContentType where
+  show Cmarkdown = show Chtml
   show Chtml  = "text/html"
   show Ccss   = "text/css"
   show Cjs    = "text/javascript"
   show Cplain = "text/plain"
   show Cjpeg  = "image/jpeg"
   show Cpng   = "image/png"
-  show Cmarkdown = show Chtml
+  -- show _      = "text/plain"
 
 toCType :: String -> ContentType
 toCType "html"  = Chtml
