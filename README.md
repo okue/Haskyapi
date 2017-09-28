@@ -22,7 +22,7 @@ In default configuration, the root directory `/` is the `html` directory.
 
 ## Now
 
-- [Simple TODO application](http://13.113.236.74:8080/v2/ftodo/) works on Hskyapi.
+- [Simple TODO application](http://13.113.236.74:8080/v2/ftodo/) works on Haskyapi.
 - [/index.html](http://13.113.236.74:8080/)
 - [/page.html](http://13.113.236.74:8080/page.html)
 - [/markdown-page.md](http://13.113.236.74:8080/markdown-page.md)
