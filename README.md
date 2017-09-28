@@ -11,6 +11,8 @@ listen on 8080
 http://localhost:8080
 ```
 
+In default configuration, the root directory `/` is the `html` directory.
+
 - [x] Open Markdown file
 
 ## TODO
