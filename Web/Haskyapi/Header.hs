@@ -121,10 +121,6 @@ parse (x:xs) =
           "Content-Type:"   -> Header hr hh hu ha hcl  (Just (rest!!0))
           _                 -> hdr
 
-
--- Content Type reference from Qiita
--- http://qiita.com/AkihiroTakamura/items/b93fbe511465f52bffaa
-
 data ContentType = Chtml
                  | Ccss
                  | Cjs

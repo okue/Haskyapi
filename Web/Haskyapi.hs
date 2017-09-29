@@ -10,8 +10,8 @@ import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
 import qualified Codec.Binary.UTF8.String as B8
 import qualified Data.ByteString.Char8    as C
-import qualified Data.List.Split as S
-import qualified Data.List       as L
+import qualified Data.List.Split   as L
+import qualified Data.List         as L
 import qualified Text.Markdown     as Md
 import qualified Data.Text.Lazy    as T
 import qualified Data.Text.Lazy.IO as T
@@ -76,9 +76,9 @@ instance Show Status where
 doResponse :: Socket -> IO ()
 doResponse conn = do
   (str, _) <- recvFrom conn 1024
-  let hdr = parse . S.splitOn "\r\n" $ C.unpack str
+  let hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
-      ct = toCType . last $ S.splitOn "." trg
+      ct = toCType . last $ L.splitOn "." trg
   putStr "\n"
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
@@ -109,15 +109,20 @@ doResponse conn = do
     _ ->
       sender NotFound conn Chtml $ C.pack "404 Not Found"
 
+----------------------------------
+-- hoge/     -> hoge/index.html
+-- hoge.html -> hoge.html
+-- hoge      -> Nothing
+----------------------------------
 complement :: String -> Maybe String
 complement path =
-  let basename = last (S.splitOn "/" path) in
+  let basename = last (L.splitOn "/" path) in
   case basename of
     -- path ends with '/'
     "" -> Just $ path ++ "index.html"
     _
       -- basename has a file extension such as ".html"
-      | length (S.splitOn "." basename) > 1 -> Just path
+      | length (L.splitOn "." basename) > 1 -> Just path
       | otherwise -> Nothing
 
 redirect :: Socket -> String -> IO ()
