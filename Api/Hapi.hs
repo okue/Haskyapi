@@ -19,14 +19,15 @@ routing = [
             (POST, "/test2", test2),
             (GET,  "/add",   add),
             (POST, "/add",   add),
-            (GET,  "/title", title)
+            (GET,  "/title", title),
+            (POST, "/title", title)
           ]
 
 title :: ApiFunc
 title qry =
   let x = lookup "url" qry in
   case x of
-    Nothing  -> return "no title"
+    Nothing  -> return "Please query parameter of \"url\" in the form of ?url=https://hoge.com"
     Just url -> do
       res <- httpLBS =<< parseRequest url
       return . B8.decodeString . LC.unpack . findTitle . parseTags $ (getResponseBody res)

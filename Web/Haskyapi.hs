@@ -147,6 +147,7 @@ sender st conn ct msg = do
 apisender :: Status -> Socket -> ContentType -> Endpoint -> Query -> Method -> IO ()
 apisender st conn ct endpoint qry mtd = do
   sendHeader conn st ct
+  send conn $ C.pack "Access-Control-Allow-Origin: *\r\n"
   send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
     Nothing         -> send conn $ C.pack "There is no valid api."
