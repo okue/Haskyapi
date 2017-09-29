@@ -18,7 +18,8 @@ In default configuration, the root directory `/` is the `html` directory.
 ## TODO
 
 - [ ] How to use Database easily
-- [ ] Easily implement RESTful api
+- [ ] Easy to implement RESTful api
+- [ ] Automatic generator of api reference
 
 ## Now
 
