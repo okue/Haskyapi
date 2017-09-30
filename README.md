@@ -24,8 +24,8 @@ In default configuration, the root directory `/` is the `html` directory.
 
 ## Now
 
-- [Simple TODO application](http://okue.site:8080/v2/ftodo/) works on Haskyapi.
-- [/index.html](http://okue.site:8080/)
-- [/page.html](http://okue.site:8080/page.html)
-- [/markdown-page.md](http://okue.site:8080/markdown-page.md)
-- [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site:8080/api/title?url=https://github.com/okue/Haskyapi)
+- [Simple TODO application](http://okue.site/v2/ftodo/) works on Haskyapi.
+- [/index.html](http://okue.site/)
+- [/page.html](http://okue.site/page.html)
+- [/markdown-page.md](http://okue.site/markdown-page.md)
+- [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site/api/title?url=https://github.com/okue/Haskyapi)
