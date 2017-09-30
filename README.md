@@ -18,12 +18,14 @@ In default configuration, the root directory `/` is the `html` directory.
 ## TODO
 
 - [ ] How to use Database easily
-- [ ] Easily implement RESTful api
+- [ ] Easy to implement RESTful api
+- [ ] Automatic generator of api reference
+- [ ] Use cgi
 
 ## Now
 
-- [Simple TODO application](http://13.113.236.74:8080/v2/ftodo/) works on Haskyapi.
-- [/index.html](http://13.113.236.74:8080/)
-- [/page.html](http://13.113.236.74:8080/page.html)
-- [/markdown-page.md](http://13.113.236.74:8080/markdown-page.md)
-- [/api/title?url=https://github.com/okue/Haskyapi](http://13.113.236.74:8080/api/title?url=https://github.com/okue/Haskyapi)
+- [Simple TODO application](http://okue.site:8080/v2/ftodo/) works on Haskyapi.
+- [/index.html](http://okue.site:8080/)
+- [/page.html](http://okue.site:8080/page.html)
+- [/markdown-page.md](http://okue.site:8080/markdown-page.md)
+- [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site:8080/api/title?url=https://github.com/okue/Haskyapi)
