@@ -16,6 +16,10 @@ export LD_LIBRARY_PATH
 sudo LD_LIBRARY_PATH=. bin/haskyapictl 80
 ```
 
+```
+DYLD_LIBRARY_PATH=. bin/haskyapictl 80
+```
+
 ## background run
 
 ```
