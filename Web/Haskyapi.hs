@@ -86,6 +86,9 @@ doResponse conn = do
     (GET, "/") -> do
       html <- C.readFile "./html/index.html"
       sender OK conn Chtml html
+      `catch` \(SomeException e) -> do
+        print e
+        sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn Cplain endpoint qry mtd
     (GET, path) -> do
