@@ -45,11 +45,11 @@ jst = TimeZone {
         timeZoneName = "JST"
       }
 
-runServer :: Port -> IO ()
-runServer port = do
+runServer :: Port -> FilePath -> IO ()
+runServer port root = do
   soc <- serveSocket port
   listen soc 5
-  startSocket soc `finally` close soc
+  startSocket soc root `finally` close soc
 
 serveSocket :: Port -> IO Socket
 serveSocket port = do
@@ -59,10 +59,10 @@ serveSocket port = do
   bind soc (SockAddrInet (read port) addr)
   return soc
 
-startSocket :: Socket -> IO ()
-startSocket soc = forever $ do
+startSocket :: Socket -> FilePath -> IO ()
+startSocket soc root = forever $ do
   (conn, addr) <- accept soc
-  forkIO $ doResponse conn
+  forkIO $ doResponse conn root
 
 data Status = OK
             | NotFound
@@ -73,8 +73,8 @@ instance Show Status where
   show NotFound = "404 Not Found"
   show Moved    = "301 Moved Permanently"
 
-doResponse :: Socket -> IO ()
-doResponse conn = do
+doResponse :: Socket -> FilePath -> IO ()
+doResponse conn root = do
   (str, _) <- recvFrom conn 1024
   let hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
@@ -84,7 +84,7 @@ doResponse conn = do
   print hdr
   case (mtd, trg) of
     (GET, "/") -> do
-      html <- C.readFile "./html/index.html"
+      html <- C.readFile $ root ++ "/index.html"
       sender OK conn Chtml html
       `catch` \(SomeException e) -> do
         print e
@@ -94,12 +94,12 @@ doResponse conn = do
     (GET, path) -> do
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
-          tmp <- T.readFile $ "./html" ++ cpath
+          tmp <- T.readFile $ root ++ cpath
           let mdfile = renderHtml $ Md.markdown Md.def tmp
               aux b  = "<head><link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\" /></head><body>" ++ b ++ "</body>"
           sender OK conn ct $ C.pack . B8.encodeString . aux . T.unpack $ mdfile
         (_, Just cpath) -> do
-          html <- C.readFile $ "./html" ++ cpath
+          html <- C.readFile $ root ++ cpath
           sender OK conn ct html
         (_, Nothing) ->
           redirect conn path
