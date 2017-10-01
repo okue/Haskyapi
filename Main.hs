@@ -2,15 +2,13 @@
 module Main where
 
 import Control.Monad
-import Web.Haskyapi (runServer)
+import Web.Haskyapi (runServer, Port)
 import System.Environment (getArgs)
 import System.Exit
+import System.Directory (getCurrentDirectory, getDirectoryContents)
 
 -- import Foreign.C.String (peekCString)
 -- import Foreign.Api
-
-htmls :: [FilePath]
-htmls = ["index.html", "page.html", "markdown-page.md", "img/logo.png"]
 
 main :: IO ()
 main = do
@@ -28,6 +26,7 @@ main = do
         Nothing ->
           putStrLn "Please use -p or -r for port-root-config"
 
+argparse :: [String] -> Maybe (Port, FilePath)
 argparse args = aux "8080" "html" args
   where
     aux p r args =
@@ -37,9 +36,20 @@ argparse args = aux "8080" "html" args
         "-r":root:as -> aux p root as
         _  -> Nothing
 
+mainProc :: Port -> FilePath -> IO ()
 mainProc port root = do
   let url = "http://localhost:" ++ port ++ "/"
   putStrLn $ "listen on " ++ port
   putStrLn $ url
-  mapM_ (putStrLn . \h -> url ++ h) htmls
+  files <- getfiles root
+  mapM_ (putStrLn . \h -> url ++ h) files
   runServer port root
+
+
+getfiles :: FilePath -> IO [FilePath]
+getfiles root = do
+  c <- getDirectoryContents root
+  return $ filter aux c
+  where
+    aux ('.':_) = False
+    aux _ = True

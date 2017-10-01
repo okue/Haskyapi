@@ -1,6 +1,7 @@
 #! /usr/bin/env runhaskell
 module Web.Haskyapi (
-  runServer
+  runServer,
+  Port
 ) where
 
 -- http://hackage.haskell.org/package/network-2.4.0.1/docs/Network-Socket.html
