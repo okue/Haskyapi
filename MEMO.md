@@ -7,30 +7,37 @@ requests.post("http://0.0.0.0:8080/api/add", params={"x":10, "y":1000})
 
 ## libapi.so
 
-```
+```sh
 LD_LIBRARY_PATH=path/to/Haskyapi
 export LD_LIBRARY_PATH
 ```
 
-```
+```sh
 sudo LD_LIBRARY_PATH=. bin/haskyapictl 80
 ```
 
-```
+```sh
 DYLD_LIBRARY_PATH=. bin/haskyapictl 80
 ```
 
 ## background run
 
-```
+```sh
 nohup bin/haskyapictl > /dev/null 2>&1 &
 nohup sudo LD_LIBRARY_PATH=. bin/haskyapictl 80 > /dev/null 2>&1 &
 ```
 
 ## kill
 
-```
+```sh
 pkill haskyapictl
+```
+
+## run script
+
+```sh
+#! /usr/bin/env sh
+DYLD_LIBRARY_PATH=~/Sites/haskyapi/ ~/Sites/haskyapi/bin/haskyapictl
 ```
 
 ## RESTful
