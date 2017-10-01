@@ -6,7 +6,7 @@ HTTP sever implemented in Haskell.
 
 ```
 $ make
-$ ./bin/haskyapictl
+$ ./bin/haskyapictl -p 8080 -r html
 listen on 8080
 http://localhost:8080
 ```
