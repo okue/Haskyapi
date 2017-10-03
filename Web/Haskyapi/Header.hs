@@ -129,6 +129,7 @@ data ContentType = Chtml
                  | Cpng
                  | Cpdf
                  | Cmarkdown
+                 deriving (Eq)
 
 instance Show ContentType where
   show Cmarkdown = show Chtml
@@ -143,11 +144,11 @@ instance Show ContentType where
 
 toCType :: String -> ContentType
 toCType "html"  = Chtml
+toCType "md"    = Cmarkdown
 toCType "css"   = Ccss
 toCType "js"    = Cjs
 toCType "plain" = Cplain
 toCType "jpeg"  = Cjpeg
 toCType "png"   = Cpng
-toCType "md"    = Cmarkdown
 toCType "pdf"   = Cpdf
-toCType  _      = Chtml
+toCType  _      = Cplain

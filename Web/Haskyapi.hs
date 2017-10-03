@@ -171,7 +171,9 @@ apisender st conn ct endpoint qry mtd = do
 sendHeader :: Socket -> Status -> ContentType -> IO Int
 sendHeader conn st ct = do
   send conn $ C.pack $ "HTTP/1.1 "      ++ show st ++ "\r\n"
-  send conn $ C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
+  if 1 <= length (filter (\x -> x == ct) [Cjpeg, Cpng, Cpdf])
+  then send conn $ C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
+  else send conn $ C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
   send conn $ C.pack   "Server: Haskyapi\r\n"
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
