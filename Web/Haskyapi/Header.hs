@@ -127,6 +127,7 @@ data ContentType = Chtml
                  | Cplain
                  | Cjpeg
                  | Cpng
+                 | Cpdf
                  | Cmarkdown
 
 instance Show ContentType where
@@ -137,6 +138,7 @@ instance Show ContentType where
   show Cplain = "text/plain"
   show Cjpeg  = "image/jpeg"
   show Cpng   = "image/png"
+  show Cpdf   = "application/pdf"
   -- show _      = "text/plain"
 
 toCType :: String -> ContentType
@@ -147,4 +149,5 @@ toCType "plain" = Cplain
 toCType "jpeg"  = Cjpeg
 toCType "png"   = Cpng
 toCType "md"    = Cmarkdown
+toCType "pdf"   = Cpdf
 toCType  _      = Chtml

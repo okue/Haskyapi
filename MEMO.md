@@ -13,18 +13,18 @@ export LD_LIBRARY_PATH
 ```
 
 ```sh
-sudo LD_LIBRARY_PATH=. bin/haskyapictl 80
+sudo LD_LIBRARY_PATH=. bin/haskyapictl -p 8000
 ```
 
 ```sh
-DYLD_LIBRARY_PATH=. bin/haskyapictl 80
+DYLD_LIBRARY_PATH=. bin/haskyapictl -p 8000
 ```
 
 ## background run
 
 ```sh
 nohup bin/haskyapictl > /dev/null 2>&1 &
-nohup sudo LD_LIBRARY_PATH=. bin/haskyapictl 80 > /dev/null 2>&1 &
+nohup sudo LD_LIBRARY_PATH=. bin/haskyapictl -p 80 > /dev/null 2>&1 &
 ```
 
 ## kill
