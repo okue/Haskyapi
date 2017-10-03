@@ -4,8 +4,8 @@ module Web.Haskyapi (
   Port
 ) where
 
--- http://hackage.haskell.org/package/network-2.4.0.1/docs/Network-Socket.html
--- http://qiita.com/asukamirai/items/522cc3c07d7d9ad21dfa
+-- http://hackage.haskell.org/package/network-2.4.0.1/docs/Network-Socket.html 
+-- http://qiita.com/asukamirai/items/522cc3c07d7d9ad21dfa 
 
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
