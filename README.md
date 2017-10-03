@@ -6,29 +6,30 @@ HTTP sever implemented in Haskell.
 
 ```
 $ make
-$ ./bin/haskyapictl -p 8080 -r html
+$ ./bin/haskyapictl -p 8080 -r .
+port: 8080 root: .
 listen on 8080
-http://localhost:8080
+http://localhost:8080/
+http://localhost:8080/index.html
+http://localhost:8080/hoge.md
 ```
 
-In default configuration, the root directory `/` is the `html` directory.
-
 - [x] Open Markdown file
+- `-p` : port number
+- `-r` : root directory
 
 ## TODO
 
 - [ ] How to use Database easily
 - [ ] How to implement RESTful api easily
 - [ ] Automatic generator of api reference document
-- [ ] CGI
 - [ ] HTTPS
-- [ ] Root directory setting
 
 ## Now
 
 Haskyapi works at [okue.site:80](http://okue.site/)
 
-- [Simple TODO application](http://okue.site/v2/ftodo/)
+- [Simple TODO application](http://okue.site/vv/ftodo/)
 - [/index.html](http://okue.site/)
 - [/page.html](http://okue.site/page.html)
 - [/markdown-page.md](http://okue.site/markdown-page.md)
