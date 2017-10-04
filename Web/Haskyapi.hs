@@ -131,7 +131,7 @@ complement path =
 
 redirect :: Socket -> String -> IO ()
 redirect conn path = do
-  sendHeader conn Moved Chtml
+  sendHeader conn Moved Chtml 0
   print path
   send conn $ C.pack $ "Location: " ++ path ++ "/\r\n"
   send conn $ C.pack "\r\n"
@@ -143,7 +143,7 @@ redirect conn path = do
 
 sender :: Status -> Socket -> ContentType -> C.ByteString -> IO ()
 sender st conn ct msg = do
-  sendHeader conn st ct
+  sendHeader conn st ct (C.length msg)
   send conn $ C.pack "\r\n"
   send conn $ msg
   send conn $ C.pack "\r\n"
@@ -155,7 +155,7 @@ sender st conn ct msg = do
 
 apisender :: Status -> Socket -> ContentType -> Endpoint -> Query -> Method -> IO ()
 apisender st conn ct endpoint qry mtd = do
-  sendHeader conn st ct
+  sendHeader conn st ct 0
   send conn $ C.pack "Access-Control-Allow-Origin: *\r\n"
   send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
@@ -168,13 +168,17 @@ apisender st conn ct endpoint qry mtd = do
   `finally`
     close conn >> putStrLn ("close conn " ++ show conn)
 
-sendHeader :: Socket -> Status -> ContentType -> IO Int
-sendHeader conn st ct = do
-  send conn $ C.pack $ "HTTP/1.1 "      ++ show st ++ "\r\n"
+sendHeader :: Socket -> Status -> ContentType -> Int -> IO Int
+sendHeader conn st ct cl = do
+  send conn $ C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
   if 1 <= length (filter (\x -> x == ct) [Cjpeg, Cpng, Cpdf])
-  then send conn $ C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
-  else send conn $ C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
-  send conn $ C.pack   "Server: Haskyapi\r\n"
+  then send conn . C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
+  else send conn . C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
+  send conn $ C.pack "Accept-Ranges:bytes\r\n"
+  case cl of
+    0 -> return 0
+    _ -> send conn . C.pack $ "Content-Length: " ++ show cl ++ "\r\n"
+  send conn $ C.pack "Server: Haskyapi\r\n"
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
 rlookup _ [] = Nothing
