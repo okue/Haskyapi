@@ -79,7 +79,14 @@ doResponse conn root = do
   (str, _) <- recvFrom conn 1024
   let hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
-      ct = toCType . last $ L.splitOn "." trg
+      -- 拡張子によって Content-Type を決めてる
+      -- 汚いので、後に直す
+      -- 拡張子がついてないときは, html 決め打ち
+      -- それ以外は、 toCtype で処理
+      ex = last . L.splitOn "." $ trg
+      ct = if ex == trg then Chtml
+           else toCType ex
+      --------------------------------
   putStr "\n"
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
@@ -172,9 +179,9 @@ sendHeader :: Socket -> Status -> ContentType -> Int -> IO Int
 sendHeader conn st ct cl = do
   send conn $ C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
   if 1 <= length (filter (\x -> x == ct) [Cjpeg, Cpng, Cpdf])
-  then send conn . C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
-  else send conn . C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
-  send conn $ C.pack "Accept-Ranges:bytes\r\n"
+    then send conn . C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
+    else send conn . C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
+  -- send conn $ C.pack "Accept-Ranges:bytes\r\n"
   case cl of
     0 -> return 0
     _ -> send conn . C.pack $ "Content-Length: " ++ show cl ++ "\r\n"
