@@ -16,6 +16,7 @@ import qualified Data.List         as L
 import qualified Text.Markdown     as Md
 import qualified Data.Text.Lazy    as T
 import qualified Data.Text.Lazy.IO as T
+import Data.Maybe (fromMaybe)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.LocalTime (utcToLocalTime, TimeZone(..))
@@ -37,6 +38,7 @@ import Web.Haskyapi.Header (
   ContentType(..),
   )
 import qualified Api.Hapi as Hapi
+import qualified Config.Domain as Config
 
 type Port = String
 
@@ -82,16 +84,22 @@ htmlhead = unlines $ [
   "</head>"
   ]
 
+cutSubdomain :: String -> String
+cutSubdomain url =
+  head $ L.splitOn "." url
 
 doResponse :: Socket -> FilePath -> IO ()
-doResponse conn root = do
+doResponse conn root' = do
   (str, _) <- recvFrom conn 1024
   let hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
+      host = fromMaybe "" $ hHost hdr
       ct = case Tool.getFileExt trg of
              Nothing -> Chtml
              Just ex -> toCType ex
+      root = root' ++ dlookup (cutSubdomain host) Config.subdomain
   putStr "\n"
+  print $ Config.domain == cutSubdomain host
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
   case (mtd, trg) of
@@ -193,8 +201,15 @@ sendHeader conn st ct cl = do
     _ -> send conn . C.pack $ "Content-Length: " ++ show cl ++ "\r\n"
   send conn $ C.pack "Server: Haskyapi\r\n"
 
+dlookup :: String -> [(String, String)] -> String
+dlookup d dict =
+  case lookup d Config.subdomain of
+    Just x  -> x
+    Nothing -> ""
+
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
 rlookup _ [] = Nothing
 rlookup me@(mtd, ep) ((x@(mtd',ep',_)):xs)
   | mtd == mtd' && ep == ep' = Just x
   | otherwise                = rlookup me xs
+

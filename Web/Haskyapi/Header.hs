@@ -127,6 +127,7 @@ data ContentType = Chtml
                  | Cplain
                  | Cjpeg
                  | Cpng
+                 | Cgif
                  | Cpdf
                  | Cmarkdown
                  deriving (Eq)
@@ -139,6 +140,7 @@ instance Show ContentType where
   show Cplain = "text/plain"
   show Cjpeg  = "image/jpeg"
   show Cpng   = "image/png"
+  show Cgif   = "image/gif"
   show Cpdf   = "application/pdf"
   -- show _      = "text/plain"
 
@@ -150,5 +152,8 @@ toCType "js"    = Cjs
 toCType "plain" = Cplain
 toCType "jpeg"  = Cjpeg
 toCType "png"   = Cpng
+toCType "gif"   = Cgif
 toCType "pdf"   = Cpdf
+toCType "txt"   = Cplain
+toCType "text"  = Cplain
 toCType  _      = Cplain

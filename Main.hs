@@ -45,7 +45,6 @@ mainProc port root = do
   mapM_ (putStrLn . \h -> url ++ h) files
   runServer port root
 
-
 getfiles :: FilePath -> IO [FilePath]
 getfiles root = do
   c <- getDirectoryContents root
@@ -53,3 +52,4 @@ getfiles root = do
   where
     aux ('.':_) = False
     aux _ = True
+
