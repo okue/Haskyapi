@@ -8,7 +8,12 @@ import Text.HTML.TagSoup (parseTags, Tag(..))
 import qualified Codec.Binary.UTF8.String as B8
 import qualified Data.ByteString.Lazy.Char8 as LC
 
-import Web.Haskyapi.Header (Api, ApiFunc, Method(..))
+import qualified Web.Haskyapi.Tool as Tool
+import Web.Haskyapi.Header (
+  Api,
+  ApiFunc,
+  Method(..),
+  )
 
 
 routing :: [Api]
@@ -29,8 +34,11 @@ title qry =
   case x of
     Nothing  -> return "Please query parameter of \"url\" in the form of ?url=https://hoge.com"
     Just url -> do
-      res <- httpLBS =<< parseRequest url
-      return . B8.decodeString . LC.unpack . findTitle . parseTags $ (getResponseBody res)
+      case Tool.getFileExt url of
+        "pdf" -> return $ Tool.basename url
+        _ -> do
+          res <- httpLBS =<< parseRequest url
+          return . B8.decodeString . LC.unpack . findTitle . parseTags $ (getResponseBody res)
   where
     findTitle ((TagOpen "title" _):(TagText x):xs) = x
     findTitle ((TagOpen "TITLE" _):(TagText x):xs) = x

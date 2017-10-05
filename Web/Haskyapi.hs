@@ -24,8 +24,10 @@ import Control.Exception
 import Control.Monad
 import Debug.Trace (trace)
 
+import qualified Web.Haskyapi.Tool as Tool
 import Web.Haskyapi.Header (
   parse,
+  toCType,
   RqLine(..),
   Method(..),
   Header(..),
@@ -33,7 +35,6 @@ import Web.Haskyapi.Header (
   Endpoint,
   Query,
   ContentType(..),
-  toCType,
   )
 import qualified Api.Hapi as Hapi
 
@@ -74,6 +75,14 @@ instance Show Status where
   show NotFound = "404 Not Found"
   show Moved    = "301 Moved Permanently"
 
+htmlhead :: String
+htmlhead = unlines $ [
+  "<head>",
+  "<link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">",
+  "</head>"
+  ]
+
+
 doResponse :: Socket -> FilePath -> IO ()
 doResponse conn root = do
   (str, _) <- recvFrom conn 1024
@@ -83,7 +92,7 @@ doResponse conn root = do
       -- 汚いので、後に直す
       -- 拡張子がついてないときは, html 決め打ち
       -- それ以外は、 toCtype で処理
-      ex = last . L.splitOn "." $ trg
+      ex = Tool.getFileExt $ trg
       ct = if ex == trg then Chtml
            else toCType ex
       --------------------------------
@@ -104,7 +113,7 @@ doResponse conn root = do
         (Cmarkdown, Just cpath) -> do
           tmp <- T.readFile $ root ++ cpath
           let mdfile = renderHtml $ Md.markdown Md.def tmp
-              aux b  = "<head><link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\"></head><body>" ++ b ++ "</body>"
+              aux b  = htmlhead ++ "<body>" ++ b ++ "</body>"
           sender OK conn ct $ C.pack . B8.encodeString . aux . T.unpack $ mdfile
         (_, Just cpath) -> do
           html <- C.readFile $ root ++ cpath
@@ -127,13 +136,13 @@ doResponse conn root = do
 ----------------------------------
 complement :: String -> Maybe String
 complement path =
-  let basename = last (L.splitOn "/" path) in
-  case basename of
+  let bn = Tool.basename path in
+  case bn of
     -- path ends with '/'
     "" -> Just $ path ++ "index.html"
     _
       -- basename has a file extension such as ".html"
-      | length (L.splitOn "." basename) > 1 -> Just path
+      | length (L.splitOn "." bn) > 1 -> Just path
       | otherwise -> Nothing
 
 redirect :: Socket -> String -> IO ()
@@ -166,7 +175,7 @@ apisender st conn ct endpoint qry mtd = do
   send conn $ C.pack "Access-Control-Allow-Origin: *\r\n"
   send conn $ C.pack "\r\n"
   case rlookup (mtd, endpoint) Hapi.routing of
-    Nothing         -> send conn $ C.pack "There is no valid api."
+    Nothing         -> send conn . C.pack $ "There is no valid api."
     Just (_,_,func) -> send conn . C.pack . B8.encodeString =<< func qry
   send conn $ C.pack "\r\n"
   return ()
