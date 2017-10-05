@@ -4,5 +4,5 @@
 
 bin
 
-/* html/storage */
-/* html */
+*.pdf
+html/vv
