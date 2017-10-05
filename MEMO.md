@@ -52,3 +52,10 @@ DYLD_LIBRARY_PATH=~/Sites/haskyapi/ ~/Sites/haskyapi/bin/haskyapictl
   - 特定のエントリーを置き換える
 - `DELTE /entries/$entry_id`
   - 特定のエントリーを削除する
+
+
+## Responsive
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+```
