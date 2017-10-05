@@ -178,10 +178,12 @@ apisender st conn ct endpoint qry mtd = do
 sendHeader :: Socket -> Status -> ContentType -> Int -> IO Int
 sendHeader conn st ct cl = do
   send conn $ C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
-  if 1 <= length (filter (\x -> x == ct) [Cjpeg, Cpng, Cpdf])
-    then send conn . C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
-    else send conn . C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
-  -- send conn $ C.pack "Accept-Ranges:bytes\r\n"
+  case filter (\x -> x == ct) [Cjpeg, Cpng, Cpdf] of
+    [] ->
+      send conn . C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
+    _  -> do
+      send conn . C.pack $ "Accept-Ranges:bytes\r\n"
+      send conn . C.pack $ "Content-Type: " ++ show ct ++ "\r\n"
   case cl of
     0 -> return 0
     _ -> send conn . C.pack $ "Content-Length: " ++ show cl ++ "\r\n"
