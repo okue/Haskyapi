@@ -7,8 +7,10 @@ module Web.Haskyapi.Tool (
 import qualified Data.List.Split as L
 import qualified Data.List       as L
 
-getFileExt :: String -> String
-getFileExt = last . L.splitOn "."
+getFileExt :: String -> Maybe String
+getFileExt path =
+  let ex = last . L.splitOn "." $ path in
+  if ex == path then Nothing else Just ex
 
 basename :: String -> String
 basename = last . L.splitOn "/"

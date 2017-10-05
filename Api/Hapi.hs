@@ -35,7 +35,7 @@ title qry =
     Nothing  -> return "Please query parameter of \"url\" in the form of ?url=https://hoge.com"
     Just url -> do
       case Tool.getFileExt url of
-        "pdf" -> return $ Tool.basename url
+        Just "pdf" -> return $ Tool.basename url
         _ -> do
           res <- httpLBS =<< parseRequest url
           return . B8.decodeString . LC.unpack . findTitle . parseTags $ (getResponseBody res)

@@ -88,14 +88,9 @@ doResponse conn root = do
   (str, _) <- recvFrom conn 1024
   let hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
-      -- 拡張子によって Content-Type を決めてる
-      -- 汚いので、後に直す
-      -- 拡張子がついてないときは, html 決め打ち
-      -- それ以外は、 toCtype で処理
-      ex = Tool.getFileExt $ trg
-      ct = if ex == trg then Chtml
-           else toCType ex
-      --------------------------------
+      ct = case Tool.getFileExt trg of
+             Nothing -> Chtml
+             Just ex -> toCType ex
   putStr "\n"
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
