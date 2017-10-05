@@ -29,7 +29,7 @@ http://localhost:8080/hoge.md
 
 Haskyapi works at [okue.site:80](http://okue.site/)
 
-- [Simple TODO application](http://okue.site/vv/ftodo/)
+- [Simple TODO application](http://ftodo.okue.site/)
 - [/index.html](http://okue.site/)
 - [/page.html](http://okue.site/page.html)
 - [/markdown-page.md](http://okue.site/markdown-page.md)
