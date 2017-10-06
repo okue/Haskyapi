@@ -1,2 +1,2 @@
 #! /usr/bin/env sh
-DYLD_LIBRARY_PATH=~/Sites/haskyapi/ ~/Sites/haskyapi/bin/haskyapictl $1 $2 $3 $4
+DYLD_LIBRARY_PATH=~/Sites/haskyapi/src ~/Sites/haskyapi/bin/haskyapictl $1 $2 $3 $4

@@ -7,12 +7,9 @@ import System.Environment (getArgs)
 import System.Exit
 import System.Directory (getCurrentDirectory, getDirectoryContents)
 
--- import Foreign.C.String (peekCString)
--- import Foreign.Api
 
 main :: IO ()
 main = do
-  -- putStrLn =<< peekCString (c_moji 1)
   args <- getArgs
   case args of
     "help":_    -> do
