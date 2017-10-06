@@ -26,16 +26,6 @@ main = do
         Nothing ->
           putStrLn "Please use -p or -r for port-root-config"
 
-argparse :: [String] -> Maybe (Port, FilePath)
-argparse args = aux "8080" "html" args
-  where
-    aux p r args =
-      case args of
-        [] -> Just (p, r)
-        "-p":port:as -> aux port r as
-        "-r":root:as -> aux p root as
-        _  -> Nothing
-
 mainProc :: Port -> FilePath -> IO ()
 mainProc port root = do
   let url = "http://localhost:" ++ port ++ "/"
@@ -53,3 +43,12 @@ getfiles root = do
     aux ('.':_) = False
     aux _ = True
 
+argparse :: [String] -> Maybe (Port, FilePath)
+argparse args = aux "8080" "html" args
+  where
+    aux p r args =
+      case args of
+        [] -> Just (p, r)
+        "-p":port:as -> aux port r as
+        "-r":root:as -> aux p root as
+        _  -> Nothing
