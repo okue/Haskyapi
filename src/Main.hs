@@ -3,10 +3,11 @@ module Main where
 
 import Control.Monad
 import Web.Haskyapi (runServer, Port)
+import Console.Cli  (argparse, Option(..))
 import System.Environment (getArgs)
-import System.Exit
 import System.Directory (getCurrentDirectory, getDirectoryContents)
-
+import System.Exit
+import Data.Maybe
 
 main :: IO ()
 main = do
@@ -17,11 +18,13 @@ main = do
       exitSuccess
     _ -> do
       case argparse args of
-        Just (port, root) -> do
+        Left x ->
+          putStrLn $ x
+        Right xs -> do
+          let root = oroot xs
+              port = oport xs
           putStrLn $ "port: " ++ port ++ " root: " ++ root
           mainProc port root
-        Nothing ->
-          putStrLn "Please use -p or -r for port-root-config"
 
 mainProc :: Port -> FilePath -> IO ()
 mainProc port root = do
@@ -40,12 +43,3 @@ getfiles root = do
     aux ('.':_) = False
     aux _ = True
 
-argparse :: [String] -> Maybe (Port, FilePath)
-argparse args = aux "8080" "html" args
-  where
-    aux p r args =
-      case args of
-        [] -> Just (p, r)
-        "-p":port:as -> aux port r as
-        "-r":root:as -> aux p root as
-        _  -> Nothing
