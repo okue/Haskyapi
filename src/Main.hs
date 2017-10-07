@@ -2,12 +2,12 @@
 module Main where
 
 import Control.Monad
-import Web.Haskyapi (runServer, Port)
-import Console.Cli  (argparse, Option(..))
 import System.Environment (getArgs)
 import System.Directory (getCurrentDirectory, getDirectoryContents)
 import System.Exit
-import Data.Maybe
+
+import Web.Haskyapi (runServer, Port)
+import Console.Cli  (argparse, Option(..))
 
 main :: IO ()
 main = do

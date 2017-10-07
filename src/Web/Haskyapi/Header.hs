@@ -114,11 +114,11 @@ parse (x:xs) =
       str2h hdr@(Header hr hh hu ha hcl hct) str =
         let key:rest = words str in
         case key of
-          "Host:"           -> Header hr (Just (rest!!0)) hu ha hcl hct
-          "User-Agent:"     -> Header hr hh (Just (rest!!0)) ha hcl hct
-          "Accept:"         -> Header hr hh hu (Just (rest!!0)) hcl hct
-          "Content-Length:" -> Header hr hh hu ha (Just (rest!!0))  hct
-          "Content-Type:"   -> Header hr hh hu ha hcl  (Just (rest!!0))
+          "Host:"           -> hdr { hHost          = Just (rest!!0) }
+          "User-Agent:"     -> hdr { hUserAgent     = Just (rest!!0) }
+          "Accept:"         -> hdr { hAccept        = Just (rest!!0) }
+          "Content-Length:" -> hdr { hContentLength = Just (rest!!0) }
+          "Content-Type:"   -> hdr { hContentType   = Just (rest!!0) }
           _                 -> hdr
 
 data ContentType = Chtml
@@ -157,3 +157,4 @@ toCType "pdf"   = Cpdf
 toCType "txt"   = Cplain
 toCType "text"  = Cplain
 toCType  _      = Cplain
+

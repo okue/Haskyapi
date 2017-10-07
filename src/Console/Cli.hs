@@ -10,13 +10,14 @@ import Control.Monad.State
 import qualified Data.List.Split as L
 import qualified Data.List       as L
 import Data.Maybe (fromMaybe)
+import Debug.Trace (trace)
 
 data Option = Option {
   oport :: String,
   oroot :: String
 } deriving (Show)
 
-data Arg = forall a. Arg {
+data Arg = forall a. Show a => Arg {
              key   :: [String],
              def   :: String,
              name  :: String,
@@ -26,10 +27,18 @@ data Arg = forall a. Arg {
 
 type A = (String, String)
 
-a2opt as =
-  let port = fromMaybe "" $ lookup "port" as
-      root = fromMaybe "" $ lookup "root" as
-  in Option port root
+a2opt :: [A] -> Option
+a2opt as = execState (aux argConfs) $ Option "" ""
+  where
+    aux :: [Arg] -> State Option ()
+    aux [] = return ()
+    aux (acf:acfs) =
+      case lookup (name acf) as of
+        Nothing | name acf == "port" -> modify (\x -> x { oport = def acf }) >> aux acfs
+        Nothing | name acf == "root" -> modify (\x -> x { oroot = def acf }) >> aux acfs
+        Just a  | name acf == "port" -> modify (\x -> x { oport = a }) >> aux acfs
+        Just a  | name acf == "root" -> modify (\x -> x { oroot = a }) >> aux acfs
+        _ -> aux acfs
 
 argConfs :: [Arg]
 argConfs = [
@@ -37,14 +46,6 @@ argConfs = [
     ,Arg ["-r", "--root"] "html" "root" oroot "Root directory"
     ,Arg ["-h", "--help"] "...." "help" id    "Help"
   ]
-
-validate :: [A] -> [A]
-validate as = map aux argConfs
-  where
-    aux aconf =
-      case lookup (name aconf) as of
-        Nothing -> (name aconf, def aconf)
-        Just x  -> (name aconf, x)
 
 mkHelp :: String
 mkHelp = unlines $ map aux argConfs
@@ -56,18 +57,18 @@ startState :: Either String [A]
 startState = Right []
 
 argparse :: [String] -> Either String Option
-argparse args = fmap a2opt . fmap validate $ execState (argparse' argConfs args) startState
+argparse args = fmap a2opt $ execState (argparse' args) startState
   where
-    argparse' :: [Arg] -> [String] -> State (Either String [A]) ()
-    argparse' aconf []     = return ()
-    argparse' aconf ("-h":_)     = modify $ \x -> Left mkHelp
-    argparse' aconf ("--help":_) = modify $ \x -> Left mkHelp
-    argparse' aconf (x:[]) = modify $ \_ -> Left x
-    argparse' aconf (ag:x:xs) =
-      case filter (\a -> any (ag ==) (key a)) aconf of
+    argparse' :: [String] -> State (Either String [A]) ()
+    argparse' [] = return ()
+    argparse' ("-h":_)     = modify $ \x -> Left mkHelp
+    argparse' ("--help":_) = modify $ \x -> Left mkHelp
+    argparse' (x:[])       = modify $ \_ -> Left x
+    argparse' (ag:x:xs) =
+      case filter (\a -> any (ag ==) (key a)) argConfs of
         [a] -> do
           modify $ fmap ((name a, x):)
-          argparse' aconf xs
+          argparse' xs
         _   ->
           modify $ \x -> Left ("invalid argument " ++ ag)
 

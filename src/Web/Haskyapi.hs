@@ -99,7 +99,6 @@ doResponse conn root' = do
              Just ex -> toCType ex
       root = root' ++ dlookup (cutSubdomain host) Config.subdomain
   putStr "\n"
-  print $ Config.domain == cutSubdomain host
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
   case (mtd, trg) of

@@ -5,7 +5,7 @@
 HTTP sever implemented in Haskell.
 
 ```
-$ make
+$ ./make.sh
 $ ./bin/haskyapictl -p 8080 -r .
 port: 8080 root: .
 listen on 8080
@@ -14,16 +14,21 @@ http://localhost:8080/index.html
 http://localhost:8080/hoge.md
 ```
 
-- [x] Open Markdown file
+### options
+
 - `-p` : port number
 - `-r` : root directory
+- `-h` : help
+
 
 ## TODO
 
+- [x] Open Markdown file
 - [ ] How to use Database easily
 - [ ] How to implement RESTful api easily
 - [ ] Automatic generator of api reference document
 - [ ] HTTPS
+
 
 ## Now
 
@@ -34,3 +39,4 @@ Haskyapi works at [okue.site:80](http://okue.site/)
 - [/page.html](http://okue.site/page.html)
 - [/markdown-page.md](http://okue.site/markdown-page.md)
 - [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site/api/title?url=https://github.com/okue/Haskyapi)
+
