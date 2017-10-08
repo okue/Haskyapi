@@ -14,8 +14,11 @@ import Debug.Trace (trace)
 
 data Option = Option {
   oport :: String,
-  oroot :: String
+  oroot :: String,
+  oip   :: String
 } deriving (Show)
+
+initOptin = Option "" "" ""
 
 data Arg = forall a. Show a => Arg {
              key   :: [String],
@@ -28,23 +31,26 @@ data Arg = forall a. Show a => Arg {
 type A = (String, String)
 
 a2opt :: [A] -> Option
-a2opt as = execState (aux argConfs) $ Option "" ""
+a2opt as = execState (aux argConfs) $ initOptin
   where
     aux :: [Arg] -> State Option ()
     aux [] = return ()
     aux (acf:acfs) =
       case lookup (name acf) as of
         Nothing | name acf == "port" -> modify (\x -> x { oport = def acf }) >> aux acfs
-        Nothing | name acf == "root" -> modify (\x -> x { oroot = def acf }) >> aux acfs
         Just a  | name acf == "port" -> modify (\x -> x { oport = a }) >> aux acfs
+        Nothing | name acf == "root" -> modify (\x -> x { oroot = def acf }) >> aux acfs
         Just a  | name acf == "root" -> modify (\x -> x { oroot = a }) >> aux acfs
+        Nothing | name acf == "ip"   -> modify (\x -> x { oip   = def acf }) >> aux acfs
+        Just a  | name acf == "ip"   -> modify (\x -> x { oip   = a }) >> aux acfs
         _ -> aux acfs
 
 argConfs :: [Arg]
 argConfs = [
-     Arg ["-p", "--port"] "8080" "port" oport "Port number"
-    ,Arg ["-r", "--root"] "html" "root" oroot "Root directory"
-    ,Arg ["-h", "--help"] "...." "help" id    "Help"
+     Arg ["-p", "--port"] "8080"      "port" oport "Port number"
+    ,Arg ["-r", "--root"] "html"      "root" oroot "Root directory"
+    ,Arg ["-h", "--help"] "...."      "help" id    "Help"
+    ,Arg ["-i", "--ip"  ] "localhost" "ip"   oip   "IP"
   ]
 
 mkHelp :: String

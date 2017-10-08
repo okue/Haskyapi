@@ -16,15 +16,16 @@ main = do
     Left x -> do
       putStrLn "haskyapictl [-p port] [-r root]"
       putStrLn x
-    Right xs -> do
-      let root = oroot xs
-          port = oport xs
-      putStrLn $ "port: " ++ port ++ " root: " ++ root
-      mainProc port root
+    Right opt ->
+      mainProc opt
 
-mainProc :: Port -> FilePath -> IO ()
-mainProc port root = do
-  let url = "http://localhost:" ++ port ++ "/"
+mainProc :: Option -> IO ()
+mainProc opt = do
+  let root = oroot opt
+      port = oport opt
+      ip   = oip   opt
+      url = "http://" ++ ip ++ ":" ++ port ++ "/"
+  putStrLn $ "root: "     ++ root
   putStrLn $ "listen on " ++ port
   putStrLn $ url
   files <- getfiles root
