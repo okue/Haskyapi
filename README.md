@@ -4,9 +4,12 @@
 
 HTTP sever implemented in Haskell.
 
-```
-$ ./make.sh
-$ ./bin/haskyapictl -p 8080 -r .
+### Build
+
+```sh
+$ stack build
+$ stack install
+$ haskyapictl -p 8080 -r .
 port: 8080 root: .
 listen on 8080
 http://localhost:8080/

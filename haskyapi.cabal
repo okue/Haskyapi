@@ -1,0 +1,58 @@
+name:                haskyapi
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/okue/Haskyapi#readme
+license:             MIT
+license-file:        LICENSE
+author:              okue
+maintainer:          example@example.com
+copyright:           2017 okue
+category:            Web
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Api.Hapi
+                       Config.Domain
+                       Console.Cli
+                       Web.Haskyapi
+                       Web.Haskyapi.Header
+                       Web.Haskyapi.Tool
+  build-depends:       base >= 4.7 && < 5
+                     , split
+                     , bytestring
+                     , mtl
+                     , tagsoup
+                     , http-conduit
+                     , utf8-string
+                     , network
+                     , text
+                     , time
+                     , markdown
+                     , blaze-html
+  default-language:    Haskell2010
+
+executable haskyapictl
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , haskyapi
+                     , directory
+  default-language:    Haskell2010
+
+test-suite haskyapi-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , haskyapi
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/okue/Haskyapi

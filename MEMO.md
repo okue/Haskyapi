@@ -13,11 +13,14 @@ export LD_LIBRARY_PATH
 ```
 
 ```sh
-sudo LD_LIBRARY_PATH=. bin/haskyapictl -p 8000
+LD_LIBRARY_PATH=.   bin/haskyapictl -p 8000
+DYLD_LIBRARY_PATH=. bin/haskyapictl -p 8000
 ```
 
 ```sh
-DYLD_LIBRARY_PATH=. bin/haskyapictl -p 8000
+SRC_C=src/Api/Capi.c
+SO=libapi.so
+gcc -shared $SRC_C -o $SO -fPIC
 ```
 
 ## background run
@@ -37,7 +40,7 @@ pkill haskyapictl
 
 ```sh
 #! /usr/bin/env sh
-DYLD_LIBRARY_PATH=~/Sites/haskyapi/ ~/Sites/haskyapi/bin/haskyapictl
+DYLD_LIBRARY_PATH=~/Sites/haskyapi/src ~/Sites/haskyapi/bin/haskyapictl $1 $2 $3 $4
 ```
 
 ## RESTful

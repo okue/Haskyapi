@@ -6,3 +6,5 @@ bin
 
 *.pdf
 html/vv
+
+.stack-work
