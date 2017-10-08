@@ -17,6 +17,12 @@ http://localhost:8080/index.html
 http://localhost:8080/hoge.md
 ```
 
+or
+
+```sh
+cabal build
+```
+
 ### options
 
 - `-p` : port number
