@@ -22,7 +22,7 @@ http://localhost:8080/hoge.md
 or
 
 ```sh
-cabal build
+$ cabal build
 ```
 
 ### options

@@ -12,19 +12,15 @@ import Console.Cli  (argparse, Option(..))
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
-    "help":_    -> do
+  case argparse args of
+    Left x -> do
       putStrLn "haskyapictl [-p port] [-r root]"
-      exitSuccess
-    _ -> do
-      case argparse args of
-        Left x ->
-          putStrLn $ x
-        Right xs -> do
-          let root = oroot xs
-              port = oport xs
-          putStrLn $ "port: " ++ port ++ " root: " ++ root
-          mainProc port root
+      putStrLn x
+    Right xs -> do
+      let root = oroot xs
+          port = oport xs
+      putStrLn $ "port: " ++ port ++ " root: " ++ root
+      mainProc port root
 
 mainProc :: Port -> FilePath -> IO ()
 mainProc port root = do

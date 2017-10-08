@@ -63,7 +63,7 @@ argparse args = fmap a2opt $ execState (argparse' args) startState
     argparse' [] = return ()
     argparse' ("-h":_)     = modify $ \x -> Left mkHelp
     argparse' ("--help":_) = modify $ \x -> Left mkHelp
-    argparse' (x:[])       = modify $ \_ -> Left x
+    argparse' (x:[])       = modify $ \_ -> Left ("error near " ++ x)
     argparse' (ag:x:xs) =
       case filter (\a -> any (ag ==) (key a)) argConfs of
         [a] -> do
