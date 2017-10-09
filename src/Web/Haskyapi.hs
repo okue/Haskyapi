@@ -167,7 +167,7 @@ apisender st conn ct endpoint qry mtd = do
   let h = "Access-Control-Allow-Origin: *\r\n\r\n"
   c <- case rlookup (mtd, endpoint) Hapi.routing of
          Nothing         -> return "There is no valid api."
-         Just (_,_,func) -> return . B8.encodeString =<< func qry
+         Just (_,_,func) -> fmap B8.encodeString (func qry)
   sendMany conn $ map C.pack [ h, c, "\r\n" ]
   `catch`
     (\(SomeException e) -> print e)
