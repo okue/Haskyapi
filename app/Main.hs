@@ -1,7 +1,7 @@
-#! /usr/bin/env runhaskell
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
-import Control.Monad
+import Control.Applicative ((<$>))
 import System.Environment (getArgs)
 import System.Directory (getCurrentDirectory, getDirectoryContents)
 import System.Exit
@@ -20,22 +20,20 @@ main = do
       mainProc opt
 
 mainProc :: Option -> IO ()
-mainProc opt = do
-  let root = oroot opt
-      port = oport opt
-      ip   = oip   opt
-      url = "http://" ++ ip ++ ":" ++ port ++ "/"
+mainProc !opt = do
+  let !root = oroot opt
+      !port = oport opt
+      !ip   = oip   opt
+      !url = "http://" ++ ip ++ ":" ++ port ++ "/"
   putStrLn $ "root: "     ++ root
   putStrLn $ "listen on " ++ port
   putStrLn url
-  files <- getfiles root
-  mapM_ (putStrLn . \h -> url ++ h) files
+  mapM_ (putStrLn . \h -> url ++ h) =<< getfiles root
   runServer port root
 
 getfiles :: FilePath -> IO [FilePath]
-getfiles root = do
-  c <- getDirectoryContents root
-  return $ filter aux c
+getfiles root =
+  filter aux <$> getDirectoryContents root
   where
     aux ('.':_) = False
     aux _ = True
