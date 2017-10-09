@@ -78,7 +78,7 @@ instance Show Status where
   show Moved    = "301 Moved Permanently"
 
 htmlhead :: String
-htmlhead = unlines $ [
+htmlhead = unlines [
   "<head>",
   "<link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">",
   "</head>"
@@ -110,7 +110,7 @@ doResponse conn root' = do
         sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn Cplain endpoint qry mtd
-    (GET, path) -> do
+    (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
           tmp <- T.readFile $ root ++ cpath
@@ -189,7 +189,7 @@ apisender st conn ct endpoint qry mtd = do
 sendHeader :: Socket -> Status -> ContentType -> Int -> IO Int
 sendHeader conn st ct cl = do
   send conn $ C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
-  case filter (\x -> x == ct) [Cjpeg, Cpng, Cpdf] of
+  case filter (== ct) [Cjpeg, Cpng, Cpdf] of
     [] ->
       send conn . C.pack $ "Content-Type: " ++ show ct ++ "; charset=utf-8\r\n"
     _  -> do

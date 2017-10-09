@@ -42,15 +42,15 @@ title qry =
   let x = lookup "url" qry in
   case x of
     Nothing  -> return "Please query parameter of \"url\" in the form of ?url=https://hoge.com"
-    Just url -> do
+    Just url ->
       case Tool.getFileExt url of
         Just "pdf" -> return $ Tool.basename url
         _ -> do
           res <- httpLBS =<< parseRequest url
-          return . B8.decodeString . LC.unpack . findTitle . parseTags $ (getResponseBody res)
+          return . B8.decodeString . LC.unpack . findTitle . parseTags $ getResponseBody res
   where
-    findTitle ((TagOpen "title" _):(TagText x):xs) = x
-    findTitle ((TagOpen "TITLE" _):(TagText x):xs) = x
+    findTitle (TagOpen "title" _ : TagText x : xs) = x
+    findTitle (TagOpen "TITLE" _ : TagText x : xs) = x
     findTitle [] = "no title"
     findTitle (x:xs) = findTitle xs
 
@@ -70,5 +70,5 @@ add qry =
   return $ case (x',y') of
     (Nothing,_) -> "No value of x."
     (_,Nothing) -> "No value of y."
-    (Just x, Just y) -> show $ (read x) + (read y)
+    (Just x, Just y) -> show $ read x + read y
 

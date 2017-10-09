@@ -65,7 +65,7 @@ instance Show Header where
         ha  = hAccept hdr
         hcl = hContentLength hdr
         hct = hContentType hdr
-    in L.intercalate "\n" $ [
+    in L.intercalate "\n" [
         "RequestLine   -> " ++ show hr,
         "Host          -> " ++ maybe "nothing" show hh,
         "UserAgent     -> " ++ maybe "nothing" show hu,
@@ -100,7 +100,7 @@ parseRqLine :: String -> Header -> Header
 parseRqLine str (Header hr hh hu ha hcl hct) =
   let mtd':tmp:_ = words str
       (ep,qry) = mkqry tmp
-      mtd = RqLine {method=(toMethod mtd'), target=ep, parameters=qry}
+      mtd = RqLine {method=toMethod mtd', target=ep, parameters=qry}
   in Header mtd hh hu ha hcl hct
 
 parse :: [String] -> Header
@@ -114,11 +114,11 @@ parse (x:xs) =
       str2h hdr@(Header hr hh hu ha hcl hct) str =
         let key:rest = words str in
         case key of
-          "Host:"           -> hdr { hHost          = Just (rest!!0) }
-          "User-Agent:"     -> hdr { hUserAgent     = Just (rest!!0) }
-          "Accept:"         -> hdr { hAccept        = Just (rest!!0) }
-          "Content-Length:" -> hdr { hContentLength = Just (rest!!0) }
-          "Content-Type:"   -> hdr { hContentType   = Just (rest!!0) }
+          "Host:"           -> hdr { hHost          = Just (head rest) }
+          "User-Agent:"     -> hdr { hUserAgent     = Just (head rest) }
+          "Accept:"         -> hdr { hAccept        = Just (head rest) }
+          "Content-Length:" -> hdr { hContentLength = Just (head rest) }
+          "Content-Type:"   -> hdr { hContentType   = Just (head rest) }
           _                 -> hdr
 
 data ContentType = Chtml
@@ -146,6 +146,7 @@ instance Show ContentType where
 
 toCType :: String -> ContentType
 toCType "html"  = Chtml
+toCType "htm"   = Chtml
 toCType "md"    = Cmarkdown
 toCType "css"   = Ccss
 toCType "js"    = Cjs

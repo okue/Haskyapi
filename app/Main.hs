@@ -27,7 +27,7 @@ mainProc opt = do
       url = "http://" ++ ip ++ ":" ++ port ++ "/"
   putStrLn $ "root: "     ++ root
   putStrLn $ "listen on " ++ port
-  putStrLn $ url
+  putStrLn url
   files <- getfiles root
   mapM_ (putStrLn . \h -> url ++ h) files
   runServer port root
