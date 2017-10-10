@@ -45,9 +45,7 @@ $ cabal build
 
 Haskyapi works at [okue.site:80](http://okue.site/)
 
-- [Simple TODO application](http://ftodo.okue.site/)
-- [/index.html](http://okue.site/)
-- [/page.html](http://okue.site/page.html)
+- [Simple TODO](http://ftodo.okue.site/)
 - [/markdown-page.md](http://okue.site/markdown-page.md)
 - [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site/api/title?url=https://github.com/okue/Haskyapi)
 
