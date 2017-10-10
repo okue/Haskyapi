@@ -25,17 +25,7 @@ import Control.Monad
 import Debug.Trace (trace)
 
 import qualified Web.Haskyapi.Tool as Tool
-import Web.Haskyapi.Header (
-  parse,
-  toCType,
-  RqLine(..),
-  Method(..),
-  Header(..),
-  Api,
-  Endpoint,
-  Query,
-  ContentType(..),
-  )
+import Web.Haskyapi.Header
 import qualified Api.Hapi as Hapi
 import qualified Config.Domain as Config
 
@@ -86,7 +76,8 @@ htmlhead = unlines [
 doResponse :: Socket -> FilePath -> IO ()
 doResponse conn root' = do
   (str, _) <- recvFrom conn 1024
-  let hdr = parse . L.splitOn "\r\n" $ C.unpack str
+  let bdy =  last . L.splitOn "\r\n" $ C.unpack str
+      hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
       host = fromMaybe "" $ hHost hdr
       ct = case Tool.getFileExt trg of
@@ -101,10 +92,9 @@ doResponse conn root' = do
       (sender OK conn Chtml =<< C.readFile (root ++ "/index.html"))
       `catch` \(SomeException e) -> do
         print e
-        print "here"
         sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
-      apisender OK conn Cplain endpoint qry mtd
+      apisender OK conn endpoint qry mtd bdy
     (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
@@ -158,13 +148,16 @@ sender st conn ct msg = do
   `finally`
     close conn >> putStrLn ("close conn " ++ show conn)
 
-apisender :: Status -> Socket -> ContentType -> Endpoint -> Query -> Method -> IO ()
-apisender st conn ct endpoint qry mtd = do
-  sendHeader conn st ct 0
+apisender :: Status -> Socket -> Endpoint -> Query -> Method -> Body -> IO ()
+apisender st conn endpoint qry mtd bdy = do
   let h = "Access-Control-Allow-Origin: *\r\n\r\n"
   c <- case rlookup (mtd, endpoint) Hapi.routing of
-         Nothing         -> return "There is no valid api."
-         Just (_,_,func) -> fmap B8.encodeString (func qry)
+        Nothing -> do
+          sendHeader conn st Cplain 0
+          return "There is no valid api."
+        Just (_,_,func,ct) -> do
+          sendHeader conn st ct 0
+          fmap B8.encodeString (func qry bdy)
   sendMany conn $ map C.pack [ h, c, "\r\n" ]
   `catch`
     (\(SomeException e) -> print e)
@@ -198,7 +191,7 @@ dlookup d dict =
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
 rlookup _ [] = Nothing
-rlookup me@(mtd, ep) ((x@(mtd',ep',_)):xs)
+rlookup me@(mtd, ep) ((x@(mtd',ep',_,_)):xs)
   | mtd == mtd' && ep == ep' = Just x
   | otherwise                = rlookup me xs
 

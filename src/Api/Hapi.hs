@@ -22,6 +22,7 @@ import Web.Haskyapi.Header (
   Api,
   ApiFunc,
   Method(..),
+  ContentType(..)
   )
 
 -- import Foreign.C.Types
@@ -33,24 +34,17 @@ import Web.Haskyapi.Header (
 
 routing :: [Api]
 routing = [
-             (GET,  "/test",  test GET)
-            ,(POST, "/test",  test POST)
-            ,(GET,  "/test2", test2)
-            ,(POST, "/test2", test2)
-            ,(GET,  "/add",   add)
-            ,(POST, "/add",   add)
-            ,(GET,  "/title", title)
-            ,(POST, "/title", title)
-            ,(POST, "/checkout", checkout)
-            ,(GET,  "/checkout", checkout)
+             (GET,  "/test",     test GET,  Cplain)
+            ,(POST, "/test",     test POST, Cplain)
+            ,(GET,  "/add",      add,       Cplain)
+            ,(GET,  "/title",    title,     Cplain)
+            ,(POST, "/checkout", checkout,  Cjson)
+            ,(GET,  "/checkout", checkout,  Cjson)
           ]
 
+--
 -- head
 --   Content-Type: application/json
--- body
---   { json file }
---
--- http://localhost:8080/api/checkout
 --
 newtype SRequest = SRequest { order :: [String] } deriving (Show, Generic)
 data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String] }
@@ -66,9 +60,10 @@ side  = [("201",150),("202",270),("203",320),("204",280)]
 drink = [("301",100),("302",220),("303",250),("304",150),("305",240),("306",270),("307",100),("308",150)]
 
 checkout :: ApiFunc
-checkout qry = do
+checkout qry bdy = do
   -- let xx   = "{\"order\": [ \"101\", \"201\", \"301\", \"444\" ]}"
-  let xx   = "{\"order\": [ \"101\", \"201\", \"301\" ]}"
+  let xx'  = "{ \"order\" : [ \"101\", \"201\", \"301\" ]}"
+      xx   = LC.pack bdy
       menu = hamb ++ side ++ drink
   case (decode xx :: Maybe SRequest) of
     Nothing  -> return "bad"
@@ -79,9 +74,8 @@ checkout qry = do
              let ss = SResponse True (sum (catMaybes yy)) (order srq)
              return . LC.unpack $ encode ss
 
-
 title :: ApiFunc
-title qry =
+title qry _ =
   let x = lookup "url" qry in
   case x of
     Nothing  -> return "Please query parameter of \"url\" in the form of ?url=https://hoge.com"
@@ -97,17 +91,12 @@ title qry =
     findTitle [] = "no title"
     findTitle (x:xs) = findTitle xs
 
-
 test :: Method -> ApiFunc
-test GET  qry = return "ok from haskell api.\nThis is GET."
-test POST qry = return "ok from haskell api.\nThis is POST."
-
-test2 :: ApiFunc
-test2 qry = return "おーけい"
-
+test GET  qry _ = return "ok from haskell api.\nThis is GET."
+test POST qry _ = return "ok from haskell api.\nThis is POST."
 
 add :: ApiFunc
-add qry =
+add qry _ =
   let x' = lookup "x" qry
       y' = lookup "y" qry in
   return $ case (x',y') of
@@ -116,5 +105,5 @@ add qry =
     (Just x, Just y) -> show $ read x + read y
 
 main = do
-  x <- checkout []
+  x <- checkout [] ""
   putStrLn x

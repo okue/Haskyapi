@@ -4,6 +4,7 @@ module Web.Haskyapi.Header (
   Header(..),
   Method(..),
   Query,
+  Body,
   Endpoint,
   Api,
   ApiFunc,
@@ -20,9 +21,10 @@ import Control.Monad
 
 import Debug.Trace (trace)
 
-type Api      = (Method, Endpoint, ApiFunc)
-type ApiFunc  = Query -> IO String
+type Api      = (Method, Endpoint, ApiFunc, ContentType)
+type ApiFunc  = Query -> Body -> IO String
 
+type Body     = String
 type Query    = [(String, String)]
 type Endpoint = String
 
@@ -139,6 +141,7 @@ parse (x:xs) =
 data ContentType = Chtml
                  | Ccss
                  | Cjs
+                 | Cjson
                  | Cplain
                  | Cjpeg
                  | Cpng
@@ -157,6 +160,7 @@ instance Show ContentType where
   show Cpng   = "image/png"
   show Cgif   = "image/gif"
   show Cpdf   = "application/pdf"
+  show Cjson  = "application/json"
   -- show _      = "text/plain"
 
 toCType :: String -> ContentType
@@ -172,5 +176,6 @@ toCType "gif"   = Cgif
 toCType "pdf"   = Cpdf
 toCType "txt"   = Cplain
 toCType "text"  = Cplain
+toCType "json"  = Cjson
 toCType  _      = Cplain
 
