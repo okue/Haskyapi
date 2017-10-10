@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiWayIf #-}
 module Web.Haskyapi.Tool (
   getFileExt,
   basename,
@@ -10,7 +11,8 @@ import qualified Data.List       as L
 getFileExt :: String -> Maybe String
 getFileExt path =
   let ex = last . L.splitOn "." $ path in
-  if ex == path then Nothing else Just ex
+  if | ex == path -> Nothing
+     | otherwise  -> Just ex
 
 basename :: String -> String
 basename = last . L.splitOn "/"

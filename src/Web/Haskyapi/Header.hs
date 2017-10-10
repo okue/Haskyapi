@@ -92,8 +92,26 @@ qsplit key (c:cs)
   | c == '='  = (key, cs)
   | otherwise = qsplit (key++[c]) cs
 
+-------------------------------------------------------------
+-- Example
+-------------------------------------------------------------
+-- GET / HTTP/1.1
+-- Host: hoge.com
+-- Connection: keep-alive
+-- Pragma: no-cache
+-- Cache-Control: no-cache
+-- Upgrade-Insecure-Requests: 1
+-- User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
+-- Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+-- Accept-Encoding: gzip, deflate
+-- Accept-Language: ja,en-US;q=0.8,en;q=0.6,zh-CN;q=0.4,zh;q=0.2
+-- Cookie: _ga=GA1.2.1220732232.1506737218
+-------------------------------------------------------------
+
 parseRqLine :: String -> Header -> Header
 parseRqLine str hdr =
+  -- Assume: Request Line is always in the valid form.
+  --         GET /hoge/index.html HTTP/1.1
   let mtd':tmp:_ = words str
       (ep,qry) = mkqry tmp
       mtd = RqLine {method=toMethod mtd', target=ep, parameters=qry}
