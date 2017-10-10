@@ -46,7 +46,7 @@ routing = [
 -- head
 --   Content-Type: application/json
 --
-newtype SRequest = SRequest { order :: [String] } deriving (Show, Generic)
+newtype SRequest = SRequest  { order :: [String] } deriving (Show, Generic)
 data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String] }
                 | SResponse2 { ok :: Bool, message :: String }
                 deriving (Show)
