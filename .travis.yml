@@ -17,7 +17,6 @@ before_install:
   - mkdir -p ~/.local/bin
   - export PATH=$HOME/.local/bin:$PATH
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-  - git clone https://github.com/okue/Haskyapi.git
 
 install:
   - stack setup
@@ -25,7 +24,8 @@ install:
   - stack install
 
 script:
-  - nohup haskyapictl > /dev/null 2>&1 &
+  - nohup haskyapictl --root . --ip localhost --port 8080 > /dev/null 2>&1 &
+  - curl "http://localhost:8080/api/checkout" -i -X POST -d "{ \"order\" : [\"104\"] }"
   - pkill haskyapictl
 
 notifications:
