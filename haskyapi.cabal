@@ -15,9 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Api.Hapi
-                       Config.Domain
-                       Console.Cli
+  exposed-modules:     Console.Cli
                        Web.Haskyapi
                        Web.Haskyapi.Header
                        Web.Haskyapi.Tool
@@ -25,15 +23,12 @@ library
                      , split
                      , bytestring
                      , mtl
-                     , tagsoup
-                     , http-conduit
                      , utf8-string
                      , network
                      , text
                      , time
                      , markdown
                      , blaze-html
-                     , aeson
   default-language:    Haskell2010
 
 executable haskyapictl
@@ -43,6 +38,11 @@ executable haskyapictl
   build-depends:       base
                      , haskyapi
                      , directory
+                     , aeson
+                     , tagsoup
+                     , http-conduit
+                     , bytestring
+                     , utf8-string
   default-language:    Haskell2010
 
 test-suite haskyapi-test
