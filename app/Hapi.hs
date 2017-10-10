@@ -47,13 +47,22 @@ routing = [
 --   Content-Type: application/json
 --
 newtype SRequest = SRequest  { order :: [String] } deriving (Show, Generic)
+
 data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String] }
                 | SResponse2 { ok :: Bool, message :: String }
                 deriving (Show)
+
 instance FromJSON SRequest
+
 instance ToJSON SResponse where
   toJSON (SResponse  x y z) = object [ "ok" .= x, "amount" .= y, "items" .= z ]
   toJSON (SResponse2 x y)   = object [ "ok" .= x, "message" .= y ]
+
+instance FromJSON SResponse where
+  parseJSON (Object v) = do
+    ok <- v .: "ok"
+    if | ok        -> SResponse  ok <$> (v .: "amount") <*> (v .: "items")
+       | otherwise -> SResponse2 ok <$> (v .: "message")
 
 hamb  = [("101",100),("102",130),("103",320),("104",320),("105",380)]
 side  = [("201",150),("202",270),("203",320),("204",280)]

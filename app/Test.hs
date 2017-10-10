@@ -53,7 +53,6 @@ main =
         | w == y    -> putStrLn "OK!!"
         | otherwise -> putStrLn "BAD!!"
 
-
 post2check :: String -> IO (Response L8.ByteString)
 post2check smpl = do
   let req' = setRequestMethod "POST" "http://localhost:8080/api/checkout"
