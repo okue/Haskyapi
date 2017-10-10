@@ -33,6 +33,7 @@ library
                      , time
                      , markdown
                      , blaze-html
+                     , aeson
   default-language:    Haskell2010
 
 executable haskyapictl
