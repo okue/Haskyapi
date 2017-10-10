@@ -15,10 +15,10 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Console.Cli
-                       Web.Haskyapi
+  exposed-modules:     Web.Haskyapi
                        Web.Haskyapi.Header
                        Web.Haskyapi.Tool
+                       Console.Cli
   build-depends:       base >= 4.7 && < 5
                      , split
                      , bytestring

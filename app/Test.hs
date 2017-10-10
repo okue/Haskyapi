@@ -7,19 +7,7 @@ import Data.Aeson
 import Data.Maybe (catMaybes)
 import GHC.Generics
 
-data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String] }
-                | SResponse2 { ok :: Bool, message :: String }
-                deriving (Show, Eq)
-
-instance FromJSON SResponse where
-  parseJSON (Object v) = do
-    ok <- v .: "ok"
-    if | ok        -> SResponse  ok <$> (v .: "amount") <*> (v .: "items")
-       | otherwise -> SResponse2 ok <$> (v .: "message")
-
-instance ToJSON SResponse where
-  toJSON (SResponse  x y z) = object [ "ok" .= x, "amount" .= y, "items" .= z ]
-  toJSON (SResponse2 x y)   = object [ "ok" .= x, "message" .= y ]
+import Hapi
 
 
 (f >< g) (a,b) = (f a, g b)

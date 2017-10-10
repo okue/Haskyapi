@@ -4,6 +4,8 @@
 {-# LANGUAGE MultiWayIf #-}
 module Hapi (
   routing,
+  SRequest(..),
+  SResponse(..),
 ) where
 
 import Network.HTTP.Simple
@@ -42,21 +44,19 @@ routing = [
             ,(GET,  "/checkout", checkout,  Cjson)
           ]
 
---
--- head
---   Content-Type: application/json
---
-newtype SRequest = SRequest  { order :: [String] } deriving (Show, Generic)
+data SRequest = SRequest  { order :: [String], coupon :: [String] } deriving (Show, Generic)
 
 data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String] }
+                | SResponse_ { ok :: Bool, amount :: Int, items :: [String], coupon_ :: [String] }
                 | SResponse2 { ok :: Bool, message :: String }
-                deriving (Show)
+                deriving (Show, Eq)
 
 instance FromJSON SRequest
 
 instance ToJSON SResponse where
-  toJSON (SResponse  x y z) = object [ "ok" .= x, "amount" .= y, "items" .= z ]
-  toJSON (SResponse2 x y)   = object [ "ok" .= x, "message" .= y ]
+  toJSON (SResponse  x y z)   = object [ "ok" .= x, "amount" .= y, "items" .= z ]
+  toJSON (SResponse_ x y z w) = object [ "ok" .= x, "amount" .= y, "items" .= z, "coupon" .= w ]
+  toJSON (SResponse2 x y)     = object [ "ok" .= x, "message" .= y ]
 
 instance FromJSON SResponse where
   parseJSON (Object v) = do
@@ -64,15 +64,15 @@ instance FromJSON SResponse where
     if | ok        -> SResponse  ok <$> (v .: "amount") <*> (v .: "items")
        | otherwise -> SResponse2 ok <$> (v .: "message")
 
-hamb  = [("101",100),("102",130),("103",320),("104",320),("105",380)]
-side  = [("201",150),("202",270),("203",320),("204",280)]
-drink = [("301",100),("302",220),("303",250),("304",150),("305",240),("306",270),("307",100),("308",150)]
+hamb    = [("101",100),("102",130),("103",320),("104",320),("105",380)]
+side    = [("201",150),("202",270),("203",320),("204",280)]
+drink   = [("301",100),("302",220),("303",250),("304",150),("305",240),("306",270),("307",100),("308",150)]
+setmenu = [("501",620),("502",620),("503",680)]
+cpon    = [("C001",120),("C002",170),("C003",50),("C004",70),("C005",80),("C006",50)]
 
 checkout :: ApiFunc
 checkout qry bdy = do
-  -- let xx   = "{\"order\": [ \"101\", \"201\", \"301\", \"444\" ]}"
-  let xx'  = "{ \"order\" : [ \"101\", \"201\", \"301\" ]}"
-      xx   = LC.pack bdy
+  let xx   = LC.pack bdy
       menu = hamb ++ side ++ drink
   case (decode xx :: Maybe SRequest) of
     Nothing  -> return "bad"
