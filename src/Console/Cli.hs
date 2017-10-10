@@ -72,11 +72,8 @@ argparse args = a2opt <$> execState (argparse' args) startState
     argparse' [x]          = modify $ \_ -> Left ("error near " ++ x)
     argparse' (ag:x:xs) =
       case filter (elem ag . key) argConfs of
-        [a] -> do
-          modify $ fmap ((name a, x):)
-          argparse' xs
-        _   ->
-          modify $ \x -> Left ("invalid argument " ++ ag)
+        [a] -> modify (fmap ((name a, x):)) >> argparse' xs
+        _   -> modify $ \x -> Left ("invalid argument " ++ ag)
 
 main :: IO ()
 main = do

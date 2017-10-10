@@ -97,11 +97,11 @@ doResponse conn root' = do
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
   case (mtd, trg) of
-    (GET, "/") -> do
-      html <- C.readFile $ root ++ "/index.html"
-      sender OK conn Chtml html
+    (GET, "/") ->
+      (sender OK conn Chtml =<< C.readFile (root ++ "/index.html"))
       `catch` \(SomeException e) -> do
         print e
+        print "here"
         sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn Cplain endpoint qry mtd
@@ -112,11 +112,8 @@ doResponse conn root' = do
           let mdfile = renderHtml $ Md.markdown Md.def tmp
               aux b  = htmlhead ++ "<body>" ++ b ++ "</body>"
           sender OK conn ct $ C.pack . B8.encodeString . aux . T.unpack $ mdfile
-        (_, Just cpath) -> do
-          html <- C.readFile $ root ++ cpath
-          sender OK conn ct html
-        (_, Nothing) ->
-          redirect conn path
+        (_, Just cpath) -> sender OK conn ct =<< C.readFile (root ++ cpath)
+        (_, Nothing)    -> redirect conn path
       `catch`
         \(SomeException e) -> do
           print e

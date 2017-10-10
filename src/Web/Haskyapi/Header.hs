@@ -54,25 +54,20 @@ data Header = Header {
                 hUserAgent     :: Maybe String,
                 hAccept        :: Maybe String,
                 hContentLength :: Maybe String,
-                hContentType   :: Maybe String
+                hContentType   :: Maybe String,
+                hReferer       :: Maybe String
               } deriving (Eq)
 
 instance Show Header where
-  show hdr =
-    let hr  = hRqLine hdr
-        hh  = hHost hdr
-        hu  = hUserAgent hdr
-        ha  = hAccept hdr
-        hcl = hContentLength hdr
-        hct = hContentType hdr
-    in L.intercalate "\n" [
-        "RequestLine   -> " ++ show hr,
-        "Host          -> " ++ maybe "nothing" show hh,
-        "UserAgent     -> " ++ maybe "nothing" show hu,
-        "Accept        -> " ++ maybe "nothing" show ha,
-        "ContentLength -> " ++ maybe "nothing" show hcl,
-        "ContentType   -> " ++ maybe "nothing" show hct
-      ]
+  show hdr = L.intercalate "\n" [
+      "RequestLine   -> " ++ show (hRqLine hdr),
+      "Host          -> " ++ maybe "nothing" show (hHost hdr),
+      "UserAgent     -> " ++ maybe "nothing" show (hUserAgent hdr),
+      "Accept        -> " ++ maybe "nothing" show (hAccept hdr),
+      "ContentLength -> " ++ maybe "nothing" show (hContentLength hdr),
+      "ContentType   -> " ++ maybe "nothing" show (hContentType hdr),
+      "Referer       -> " ++ maybe "nothing" show (hReferer hdr)
+    ]
 
 unitheader :: Header
 unitheader = Header {
@@ -81,7 +76,8 @@ unitheader = Header {
                hUserAgent     = Nothing,
                hAccept        = Nothing,
                hContentLength = Nothing,
-               hContentType   = Nothing
+               hContentType   = Nothing,
+               hReferer       = Nothing
              }
 
 mkqry :: String -> (Endpoint, Query)
@@ -97,11 +93,11 @@ qsplit key (c:cs)
   | otherwise = qsplit (key++[c]) cs
 
 parseRqLine :: String -> Header -> Header
-parseRqLine str (Header hr hh hu ha hcl hct) =
+parseRqLine str hdr =
   let mtd':tmp:_ = words str
       (ep,qry) = mkqry tmp
       mtd = RqLine {method=toMethod mtd', target=ep, parameters=qry}
-  in Header mtd hh hu ha hcl hct
+  in hdr { hRqLine = mtd }
 
 parse :: [String] -> Header
 parse []     = unitheader
@@ -111,7 +107,7 @@ parse (x:xs) =
   foldl str2h firstheader xs
     where
       str2h hdr "" = hdr
-      str2h hdr@(Header hr hh hu ha hcl hct) str =
+      str2h hdr str =
         let key:rest = words str in
         case key of
           "Host:"           -> hdr { hHost          = Just (head rest) }
@@ -119,6 +115,7 @@ parse (x:xs) =
           "Accept:"         -> hdr { hAccept        = Just (head rest) }
           "Content-Length:" -> hdr { hContentLength = Just (head rest) }
           "Content-Type:"   -> hdr { hContentType   = Just (head rest) }
+          "Referer:"        -> hdr { hReferer       = Just (head rest) }
           _                 -> hdr
 
 data ContentType = Chtml
