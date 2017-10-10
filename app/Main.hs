@@ -9,6 +9,9 @@ import System.Exit
 import Web.Haskyapi (runServer, Port)
 import Console.Cli  (argparse, Option(..))
 
+import Hapi   (routing)
+import Domain (subdomain)
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -29,7 +32,7 @@ mainProc !opt = do
   putStrLn $ "listen on " ++ port
   putStrLn url
   mapM_ (putStrLn . \h -> url ++ h) =<< getfiles root
-  runServer port root
+  runServer (port, root, subdomain, routing)
 
 getfiles :: FilePath -> IO [FilePath]
 getfiles root =

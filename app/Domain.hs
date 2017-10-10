@@ -1,4 +1,4 @@
-module Config.Domain (
+module Domain (
   domain,
   subdomain,
 )
