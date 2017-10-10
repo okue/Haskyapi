@@ -10,6 +10,8 @@ module Web.Haskyapi.Header (
   ApiFunc,
   ContentType(..),
   toCType,
+  Domain,
+  SubDomain,
 ) where
 
 import qualified Data.ByteString.Char8 as C
@@ -21,6 +23,8 @@ import Control.Monad
 
 import Debug.Trace (trace)
 
+type Domain    = String
+type SubDomain = [(String, String)]
 type Api      = (Method, Endpoint, ApiFunc, ContentType)
 type ApiFunc  = Query -> Body -> IO String
 

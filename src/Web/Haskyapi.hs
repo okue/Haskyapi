@@ -26,8 +26,6 @@ import Debug.Trace (trace)
 
 import qualified Web.Haskyapi.Tool as Tool
 import Web.Haskyapi.Header
-import qualified Api.Hapi as Hapi
-import qualified Config.Domain as Config
 
 type Port = String
 
@@ -38,11 +36,11 @@ jst = TimeZone {
         timeZoneName = "JST"
       }
 
-runServer :: Port -> FilePath -> IO ()
-runServer port root = do
+runServer :: (Port, FilePath, SubDomain, [Api]) -> IO ()
+runServer (port,root,subdomain,routing) = do
   soc <- serveSocket port
   listen soc 5
-  startSocket soc root `finally` close soc
+  startSocket soc (root,subdomain,routing) `finally` close soc
 
 serveSocket :: Port -> IO Socket
 serveSocket port = do
@@ -52,10 +50,10 @@ serveSocket port = do
   bind soc (SockAddrInet (read port) addr)
   return soc
 
-startSocket :: Socket -> FilePath -> IO ()
-startSocket soc root = forever $ do
+startSocket :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
+startSocket soc cf = forever $ do
   (conn, addr) <- accept soc
-  forkIO $ doResponse conn root
+  forkIO $ doResponse conn cf
 
 data Status = OK
             | NotFound
@@ -73,8 +71,8 @@ htmlhead = unlines [
   "</head>"
   ]
 
-doResponse :: Socket -> FilePath -> IO ()
-doResponse conn root' = do
+doResponse :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
+doResponse conn (root',subdomain,routing) = do
   (str, _) <- recvFrom conn 1024
   let bdy =  last . L.splitOn "\r\n" $ C.unpack str
       hdr = parse . L.splitOn "\r\n" $ C.unpack str
@@ -83,7 +81,7 @@ doResponse conn root' = do
       ct = case Tool.getFileExt trg of
              Nothing -> Chtml
              Just ex -> toCType ex
-      root = root' ++ dlookup (cutSubdomain host) Config.subdomain
+      root = root' ++ dlookup (cutSubdomain host) subdomain
   putStr "\n"
   print =<< utcToLocalTime jst <$> getCurrentTime
   print hdr
@@ -94,7 +92,7 @@ doResponse conn root' = do
         print e
         sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
-      apisender OK conn endpoint qry mtd bdy
+      apisender OK conn routing endpoint qry mtd bdy
     (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
@@ -148,10 +146,10 @@ sender st conn ct msg = do
   `finally`
     close conn >> putStrLn ("close conn " ++ show conn)
 
-apisender :: Status -> Socket -> Endpoint -> Query -> Method -> Body -> IO ()
-apisender st conn endpoint qry mtd bdy = do
+apisender :: Status -> Socket -> [Api] -> Endpoint -> Query -> Method -> Body -> IO ()
+apisender st conn routing endpoint qry mtd bdy = do
   let h = "Access-Control-Allow-Origin: *\r\n\r\n"
-  c <- case rlookup (mtd, endpoint) Hapi.routing of
+  c <- case rlookup (mtd, endpoint) routing of
         Nothing -> do
           sendHeader conn st Cplain 0
           return "There is no valid api."
@@ -183,9 +181,9 @@ sendHeader conn st ct cl = do
 cutSubdomain :: String -> String
 cutSubdomain = head . L.splitOn "."
 
-dlookup :: String -> [(String, String)] -> String
-dlookup d dict =
-  case lookup d Config.subdomain of
+dlookup :: String -> SubDomain -> String
+dlookup d subdomain =
+  case lookup d subdomain of
     Just x  -> x
     Nothing -> ""
 
