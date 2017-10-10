@@ -5,6 +5,10 @@ import requests
 requests.post("http://0.0.0.0:8080/api/add", params={"x":10, "y":1000})
 ```
 
+```sh
+curl "http://localhost:8080/api/test" -H 'Content-Type:application/json' -d "{ \"key\" : \"1\" }"
+```
+
 ## libapi.so
 
 ```sh
