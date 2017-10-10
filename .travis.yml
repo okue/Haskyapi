@@ -18,7 +18,6 @@ install:
 
 script:
   - nohup haskyapictl --root . --ip localhost --port 8080 > /dev/null 2>&1 &
-  - curl "http://localhost:8080/api/checkout" -i -X POST -d "{ \"order\" : [\"104\"] }"
   - cd app
   - stack runhaskell Test.hs
   - pkill haskyapictl
