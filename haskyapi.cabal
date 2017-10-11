@@ -1,7 +1,7 @@
 name:                haskyapi
 version:             0.0.0.1
--- synopsis:
--- description:
+synopsis:            HTTP server
+description:         HTTP server
 homepage:            https://github.com/okue/Haskyapi#readme
 license:             MIT
 license-file:        LICENSE
