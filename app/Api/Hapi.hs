@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiWayIf #-}
 module Api.Hapi (
   routing,
@@ -15,7 +14,6 @@ import qualified Data.ByteString.Lazy.Char8 as LC
 import Control.Applicative
 import Data.Aeson
 import Data.Maybe (catMaybes)
-import GHC.Generics
 
 import Debug.Trace (trace)
 
@@ -44,24 +42,27 @@ routing = [
             ,(GET,  "/checkout", checkout,  Cjson)
           ]
 
-data SRequest = SRequest  { order :: [String], coupon :: [String] } deriving (Show, Generic)
+data SRequest = SRequest  { order :: [String], coupon :: [String] } deriving (Show, Eq)
 
-data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String] }
-                | SResponse_ { ok :: Bool, amount :: Int, items :: [String], coupon_ :: [String] }
+data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String], coupon_ :: [String] }
                 | SResponse2 { ok :: Bool, message :: String }
                 deriving (Show, Eq)
 
-instance FromJSON SRequest
+instance FromJSON SRequest where
+  parseJSON (Object v) = do
+    SRequest <$> (v .: "order") <*> (v .: "coupon")
+    -- if | c  == []  -> SRequest <$> (v .: "order") <*> (v .: "coupon")
+    --    | otherwise -> SRequest <$> (v .: "order") <*> (return [])
 
 instance ToJSON SResponse where
-  toJSON (SResponse  x y z)   = object [ "ok" .= x, "amount" .= y, "items" .= z ]
-  toJSON (SResponse_ x y z w) = object [ "ok" .= x, "amount" .= y, "items" .= z, "coupon" .= w ]
+  toJSON (SResponse x y z []) = object [ "ok" .= x, "amount" .= y, "items" .= z ]
+  toJSON (SResponse x y z w)  = object [ "ok" .= x, "amount" .= y, "items" .= z, "coupon" .= w ]
   toJSON (SResponse2 x y)     = object [ "ok" .= x, "message" .= y ]
 
 instance FromJSON SResponse where
   parseJSON (Object v) = do
     ok <- v .: "ok"
-    if | ok        -> SResponse  ok <$> (v .: "amount") <*> (v .: "items")
+    if | ok        -> SResponse  ok <$> (v .: "amount") <*> (v .: "items") <*> (v .: "coupon")
        | otherwise -> SResponse2 ok <$> (v .: "message")
 
 hamb    = [("101",100),("102",130),("103",320),("104",320),("105",380)]
@@ -77,10 +78,11 @@ checkout qry bdy = do
   case (decode xx :: Maybe SRequest) of
     Nothing  -> return "bad"
     Just srq -> do
+      print srq
       let yy = map (`lookup` menu) (order srq)
       if | Nothing `elem` yy -> return . LC.unpack . encode $ SResponse2 False "item_not_found"
          | otherwise -> do
-             let ss = SResponse True (sum (catMaybes yy)) (order srq)
+             let ss = SResponse True (sum (catMaybes yy)) (order srq) []
              return . LC.unpack $ encode ss
 
 title :: ApiFunc
@@ -114,5 +116,8 @@ add qry _ =
     (Just x, Just y) -> show $ read x + read y
 
 main = do
-  x <- checkout [] ""
+  let i = concat [ "{ \"order\" : ", (show (map show [101])) , ", \"coupon\" : ",(show (map show [101])) ," }" ]
+  putStrLn i
+  print $ (decode (LC.pack i) :: Maybe SRequest)
+  x <- checkout [] i
   putStrLn x
