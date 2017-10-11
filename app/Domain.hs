@@ -4,10 +4,10 @@ module Domain (
 )
 where
 
-domain :: String
+domain :: Domain
 domain = "localhost"
 
-subdomain :: [(String, String)]
+subdomain :: SubDomain
 subdomain = [
      ("test",     "/test/")
   ]
