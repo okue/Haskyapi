@@ -1,8 +1,9 @@
 module Domain (
   domain,
   subdomain,
-)
-where
+) where
+
+import Web.Haskyapi.Header (Domain, SubDomain)
 
 domain :: Domain
 domain = "localhost"
