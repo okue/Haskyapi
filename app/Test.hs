@@ -7,7 +7,7 @@ import Data.Aeson
 import Data.Maybe (catMaybes)
 import GHC.Generics
 
-import Hapi
+import Api.Hapi
 
 
 (f >< g) (a,b) = (f a, g b)
