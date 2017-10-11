@@ -7,9 +7,9 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Api.Model
-
+module Model
 where
+
 import Control.Monad.IO.Class (liftIO)
 import Database.Persist
 import Database.Persist.TH

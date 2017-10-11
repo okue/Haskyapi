@@ -2,7 +2,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiWayIf #-}
-module Hapi (
+module Api.Hapi (
   routing,
   SRequest(..),
   SResponse(..),

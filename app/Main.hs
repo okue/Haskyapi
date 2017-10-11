@@ -7,9 +7,9 @@ import System.Directory (getCurrentDirectory, getDirectoryContents)
 import System.Exit
 
 import Web.Haskyapi (runServer, Port)
-import Console.Cli  (argparse, Option(..))
+import Console.Cli (argparse, Option(..))
 
-import Hapi   (routing)
+import Api.Hapi (routing)
 import Domain (subdomain)
 
 main :: IO ()
