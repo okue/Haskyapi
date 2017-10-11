@@ -13,10 +13,10 @@ import Api.Hapi
 (f >< g) (a,b) = (f a, g b)
 
 tests = map ((sample . show . map show) >< id) [
-      ([103, 202, 302],      SResponse  True 810  [ "103", "202", "302" ] )
+      ([103, 202, 302],      SResponse  True 810  [ "103", "202", "302" ] [])
     , ([107, 202, 302],      SResponse2 False "item_not_found")
-    , ([103, 202, 302, 104], SResponse  True 1130 [ "103", "202", "302", "104" ])
-    , ([103, 202, 302, 304], SResponse  True 960  [ "103", "202", "302", "304" ])
+    , ([103, 202, 302, 104], SResponse  True 1130 [ "103", "202", "302", "104" ] [])
+    , ([103, 202, 302, 304], SResponse  True 960  [ "103", "202", "302", "304" ] [])
   ]
   where
     sample l = concat [ "{ \"order\" : ", l, " }" ]
