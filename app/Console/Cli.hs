@@ -1,5 +1,5 @@
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE MultiWayIf, RankNTypes    #-}
+{-# LANGUAGE ExistentialQuantification           #-}
+{-# LANGUAGE MultiWayIf, RankNTypes, BangPatterns#-}
 module Console.Cli (
   argparse,
   Option(..),
@@ -17,6 +17,7 @@ import Data.Maybe (fromMaybe)
 -- command option
 --------------------------------------------------------
 -- haskyapi --help
+-- haskyapi --version
 -- haskyapi migrate
 -- haskyapi migrate --help
 -- haskyapi runserver --help
@@ -25,13 +26,14 @@ import Data.Maybe (fromMaybe)
 
 data Mode a = Runserver a
             | Migrate   a
-            | Help
+            | Message String
             | Error String
             deriving (Show)
 
 instance Functor Mode where
   fmap f (Runserver x) = Runserver (f x)
   fmap f (Migrate x)   = Migrate (f x)
+  fmap f (Message x)   = Message x
   fmap _ (Error x)     = Error x
 
 data Arg = Arg {
@@ -68,13 +70,27 @@ argparse :: [String] -> Mode Option
 argparse args =
   case checkmode args of
     Error x      -> Error x
+    Message x    -> Message x
     Runserver xs -> argparseMain argConfRunserver xs Runserver
     Migrate   xs -> argparseMain argConfMigrate   xs Migrate
   where
     checkmode :: [String] -> Mode [String]
     checkmode ("runserver":xs) = Runserver xs
     checkmode ("migrate"  :xs) = Migrate xs
+    checkmode ("--version":_)  = Message "0.0.0.1"
+    checkmode ("-v":_)         = Message "0.0.0.1"
+    checkmode ("--help":_)     = Message $ mkHelpAll
+    checkmode ("-h":_)         = Message $ mkHelpAll
     checkmode _                = Error "invalid mode!!"
+    mkHelpAll :: String
+    mkHelpAll = concat ["haskyapi runserver\n", aux argConfMigrate, "haskyapi migrate\n", aux argConfRunserver]
+      where
+        aux = unlines . map aux'
+        aux' (Arg forms defa nm desc) = L.intercalate "\t" [ "\t" ++ eqleng 6 nm, eqleng 11 (unwords forms), "defaulut = " ++ eqleng 8 defa, desc]
+        eqleng th xs =
+          let !l = length xs in
+          if | length xs <= th -> xs ++ replicate (th-l) ' '
+             | otherwise       -> xs
     argparseMain :: [Arg] -> [String] -> ([A] -> Mode [A]) -> Mode Option
     argparseMain argconf xs mode = a2optMain $ execState (argparse' xs) (mode [])
       where
@@ -84,8 +100,8 @@ argparse args =
             aux (Arg forms defa nm desc) = unwords [nm, unwords forms, "defaulut =", defa, desc]
         argparse' :: [String] -> State (Mode [A]) ()
         argparse' [] = return ()
-        argparse' ("-h":_)     = modify $ \x -> Error mkHelp
-        argparse' ("--help":_) = modify $ \x -> Error mkHelp
+        argparse' ("-h":_)        = modify $ \x -> Message mkHelp
+        argparse' ("--help":_)    = modify $ \x -> Message mkHelp
         argparse' [x]          = modify $ \_ -> Error ("error near " ++ x)
         argparse' (ag:x:xs) =
           case filter (elem ag . key) argconf of
@@ -113,4 +129,7 @@ main :: IO ()
 main = do
   print $ argparse ["runserver", "--root", "html"]
   print $ argparse ["migrate"]
+  print $ argparse ["-v"]
+  let Message a = argparse ["-h"]
+  putStrLn a
 

@@ -19,7 +19,7 @@ install:
 script:
   - haskyapi migrate
   - nohup haskyapi runserver --root . --ip localhost --port 8080 > /dev/null 2>&1 &
-  - haskyapi test
+  - stack test
   - pkill haskyapi
   - stack clean
 
