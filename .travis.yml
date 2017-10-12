@@ -17,8 +17,9 @@ install:
   - stack install
 
 script:
-  - nohup haskyapictl --root . --ip localhost --port 8080 > /dev/null 2>&1 &
   - cd app
+  - stack runhaskell Model.hs
+  - nohup haskyapictl --root . --ip localhost --port 8080 > /dev/null 2>&1 &
   - stack runhaskell Test.hs
   - pkill haskyapictl
   - stack clean
