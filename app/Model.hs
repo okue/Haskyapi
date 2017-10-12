@@ -14,14 +14,17 @@ import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite
 
+import qualified Config
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   Menu
     key   Int
     price Int
     deriving Show
   Coupon
-    key String
-    off Int
+    key    String
+    target Int
+    off    Int
     deriving Show
   SetMenu
     key Int
@@ -30,21 +33,21 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 |]
 
 lookupTemplate f g =
-  runSqlite "./haskyapi.db" . aux $ listToMaybe . map (f . entityVal) <$> g
+  runSqlite Config.db . aux $ listToMaybe . map (f . entityVal) <$> g
   where
     aux :: ReaderT SqlBackend m a -> ReaderT SqlBackend m a
     aux = id
 
-lookupCoupon :: String -> IO (Maybe Int)
+lookupCoupon :: String -> IO (Maybe Coupon)
 lookupCoupon x =
-  lookupTemplate couponOff $ selectList [CouponKey ==. x] [LimitTo 1]
+  lookupTemplate id $ selectList [CouponKey ==. x] [LimitTo 1]
 
 lookupMenu :: Int -> IO (Maybe Int)
 lookupMenu x =
-  lookupTemplate  menuPrice $ selectList [MenuKey ==. x] [LimitTo 1]
+  lookupTemplate menuPrice $ selectList [MenuKey ==. x] [LimitTo 1]
 
 insertMenu :: IO ()
-insertMenu = runSqlite "./haskyapi.db" $ do
+insertMenu = runSqlite Config.db $ do
   runMigration migrateAll
   mapM_ insert [
       Menu 101 100,
@@ -66,12 +69,12 @@ insertMenu = runSqlite "./haskyapi.db" $ do
       Menu 308 150
     ]
   mapM_ insert [
-      Coupon "C001" 120,
-      Coupon "C002" 170,
-      Coupon "C003" 50,
-      Coupon "C004" 70,
-      Coupon "C005" 80,
-      Coupon "C006" 50
+      Coupon "C001" 202 120,
+      Coupon "C002" 203 170,
+      Coupon "C003" 103 50,
+      Coupon "C004" 502 70,
+      Coupon "C005" 503 80,
+      Coupon "C006" 308 50
     ]
 
 main :: IO ()

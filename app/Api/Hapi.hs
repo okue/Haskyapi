@@ -7,16 +7,15 @@ module Api.Hapi (
   SResponse(..),
 ) where
 
-import Network.HTTP.Simple
-import Text.HTML.TagSoup (parseTags, Tag(..))
 import qualified Codec.Binary.UTF8.String as B8
 import qualified Data.ByteString.Lazy.Char8 as LC
+import Text.HTML.TagSoup (parseTags, Tag(..))
+import Network.HTTP.Simple
 import Control.Applicative
-import Data.Aeson
 import Data.Maybe (catMaybes)
+import Data.Aeson
 
-import Debug.Trace (trace)
-
+import qualified Model
 import qualified Web.Haskyapi.Tool as Tool
 import Web.Haskyapi.Header (
   Api,
@@ -42,48 +41,41 @@ routing = [
             ,(GET,  "/checkout", checkout,  Cjson)
           ]
 
-data SRequest = SRequest  { order :: [String], coupon :: [String] } deriving (Show, Eq)
+data SRequest = SRequest  { order :: [Int], coupon :: [String] } deriving (Show, Eq)
 
-data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [String], coupon_ :: [String] }
+data SResponse  = SResponse  { ok :: Bool, amount :: Int, items :: [Int], coupon_ :: Maybe [String] }
                 | SResponse2 { ok :: Bool, message :: String }
                 deriving (Show, Eq)
 
 instance FromJSON SRequest where
   parseJSON (Object v) = do
-    SRequest <$> (v .: "order") <*> (v .: "coupon")
-    -- if | c  == []  -> SRequest <$> (v .: "order") <*> (v .: "coupon")
-    --    | otherwise -> SRequest <$> (v .: "order") <*> (return [])
+    odr <- v .: "order"
+    SRequest (map read odr) <$> v .: "coupon"
 
 instance ToJSON SResponse where
-  toJSON (SResponse x y z []) = object [ "ok" .= x, "amount" .= y, "items" .= z ]
-  toJSON (SResponse x y z w)  = object [ "ok" .= x, "amount" .= y, "items" .= z, "coupon" .= w ]
-  toJSON (SResponse2 x y)     = object [ "ok" .= x, "message" .= y ]
+  toJSON (SResponse x y z Nothing) = object [ "ok" .= x, "amount" .= y, "items" .= map show z ]
+  toJSON (SResponse x y z w)       = object [ "ok" .= x, "amount" .= y, "items" .= map show z, "coupon" .= w ]
+  toJSON (SResponse2 x y)          = object [ "ok" .= x, "message" .= y ]
 
 instance FromJSON SResponse where
   parseJSON (Object v) = do
     ok <- v .: "ok"
-    if | ok        -> SResponse  ok <$> (v .: "amount") <*> (v .: "items") <*> (v .: "coupon")
-       | otherwise -> SResponse2 ok <$> (v .: "message")
+    if | ok        -> SResponse  ok <$> v .: "amount" <*> (map read <$> v .: "items") <*> v .:? "coupon"
+       | otherwise -> SResponse2 ok <$> v .: "message"
 
-hamb    = [("101",100),("102",130),("103",320),("104",320),("105",380)]
-side    = [("201",150),("202",270),("203",320),("204",280)]
-drink   = [("301",100),("302",220),("303",250),("304",150),("305",240),("306",270),("307",100),("308",150)]
-setmenu = [("501",620),("502",620),("503",680)]
-cpon    = [("C001",120),("C002",170),("C003",50),("C004",70),("C005",80),("C006",50)]
 
 checkout :: ApiFunc
 checkout qry bdy = do
   let xx   = LC.pack bdy
-      menu = hamb ++ side ++ drink
   case (decode xx :: Maybe SRequest) of
     Nothing  -> return "bad"
-    Just srq -> do
-      print srq
-      let yy = map (`lookup` menu) (order srq)
+    Just (SRequest odr cpn) -> do
+      yy <- mapM Model.lookupMenu odr
       if | Nothing `elem` yy -> return . LC.unpack . encode $ SResponse2 False "item_not_found"
          | otherwise -> do
-             let ss = SResponse True (sum (catMaybes yy)) (order srq) []
+             let ss = SResponse True (sum (catMaybes yy)) odr $ case cpn of [] -> Nothing; _ -> Just cpn
              return . LC.unpack $ encode ss
+
 
 title :: ApiFunc
 title qry _ =
@@ -102,9 +94,11 @@ title qry _ =
     findTitle [] = "no title"
     findTitle (x:xs) = findTitle xs
 
+
 test :: Method -> ApiFunc
 test GET  qry _ = return "ok from haskell api.\nThis is GET."
 test POST qry _ = return "ok from haskell api.\nThis is POST."
+
 
 add :: ApiFunc
 add qry _ =
@@ -115,9 +109,16 @@ add qry _ =
     (_,Nothing) -> "No value of y."
     (Just x, Just y) -> show $ read x + read y
 
+
 main = do
-  let i = concat [ "{ \"order\" : ", (show (map show [101])) , ", \"coupon\" : ",(show (map show [101])) ," }" ]
+  -- let i = concat [ "{ \"order\" : ", show (map show [101,201,301]) , ", \"coupon\" : ", show ["C001","C004","C006"] ," }" ]
+  let i = concat [ "{ \"order\" : ", show (map show [109,201,301]) , ", \"coupon\" : [] }" ]
+  putStr "Input     => "
   putStrLn i
-  print $ (decode (LC.pack i) :: Maybe SRequest)
+  putStr "Parse     => "
+  print (decode (LC.pack i) :: Maybe SRequest)
   x <- checkout [] i
+  putStr "Return    => "
   putStrLn x
+  putStr "Parse     => "
+  print (decode (LC.pack x) :: Maybe SResponse)

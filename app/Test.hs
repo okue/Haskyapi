@@ -9,18 +9,16 @@ import GHC.Generics
 
 import Api.Hapi
 
-
 (f >< g) (a,b) = (f a, g b)
 
 tests = map ((sample . show . map show) >< id) [
-      ([103, 202, 302],      SResponse  True 810  [ "103", "202", "302" ] [])
+      ([103, 202, 302],      SResponse  True 810  [ 103, 202, 302 ] Nothing)
     , ([107, 202, 302],      SResponse2 False "item_not_found")
-    , ([103, 202, 302, 104], SResponse  True 1130 [ "103", "202", "302", "104" ] [])
-    , ([103, 202, 302, 304], SResponse  True 960  [ "103", "202", "302", "304" ] [])
+    , ([103, 202, 302, 104], SResponse  True 1130 [ 103, 202, 302, 104 ] Nothing)
+    , ([103, 202, 302, 304], SResponse  True 960  [ 103, 202, 302, 304 ] Nothing)
   ]
   where
-    sample l = concat [ "{ \"order\" : ", l, " }" ]
-
+    sample l = concat [ "{ \"order\" : ", l, ", \"coupon\" : [] }" ]
 
 main :: IO ()
 main =
@@ -37,7 +35,7 @@ main =
     L8.putStrLn (encode y)
     case decode q of
       Nothing -> putStrLn "ERROR: invalid json"
-      Just  w
+      Just w
         | w == y    -> putStrLn "OK!!"
         | otherwise -> putStrLn "BAD!!"
 
