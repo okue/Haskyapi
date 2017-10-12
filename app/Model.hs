@@ -4,7 +4,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Model (
   lookupMenu,
-  lookupCoupon
+  lookupCoupon,
+  migrateAndInit,
 ) where
 
 import Data.Maybe (listToMaybe)
@@ -46,8 +47,8 @@ lookupMenu :: Int -> IO (Maybe Int)
 lookupMenu x =
   lookupTemplate menuPrice $ selectList [MenuKey ==. x] [LimitTo 1]
 
-insertMenu :: IO ()
-insertMenu = runSqlite Config.db $ do
+migrateAndInit :: IO ()
+migrateAndInit = runSqlite Config.db $ do
   runMigration migrateAll
   mapM_ insert [
       Menu 101 100,
@@ -79,7 +80,7 @@ insertMenu = runSqlite Config.db $ do
 
 main :: IO ()
 main = do
-  insertMenu
+  migrateAndInit
   print =<< lookupMenu 101
   print =<< lookupMenu 201
   print =<< lookupMenu 301
