@@ -7,7 +7,8 @@ import System.Directory (getCurrentDirectory, getDirectoryContents)
 import System.Exit
 
 import Web.Haskyapi (runServer, Port)
-import Console.Cli (argparse, Option(..))
+import Console.Cli (argparse, Option(..), Mode(..))
+import Model (migrateAndInit)
 
 import qualified Api.Hapi as Hapi
 import qualified Config
@@ -16,11 +17,12 @@ main :: IO ()
 main = do
   args <- getArgs
   case argparse args of
-    Left x -> do
-      putStrLn "haskyapictl [-p port] [-r root]"
+    Error x ->
       putStrLn x
-    Right opt ->
+    Runserver opt ->
       mainProc opt
+    Migrate opt ->
+      migrateAndInit
 
 mainProc :: Option -> IO ()
 mainProc !opt = do
