@@ -34,9 +34,10 @@ executable haskyapictl
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  other-modules:       Domain
+  other-modules:       Config
                      , Console.Cli
                      , Api.Hapi
+                     , Model
   build-depends:       base
                      , haskyapi
                      , mtl
@@ -47,6 +48,7 @@ executable haskyapictl
                      , aeson
                      , bytestring
                      , utf8-string
+                     , text
                      , persistent
                      , persistent-template
                      , persistent-sqlite
