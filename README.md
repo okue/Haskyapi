@@ -11,8 +11,9 @@ HTTP sever implemented in Haskell.
 ```sh
 $ stack build
 $ stack install
-$ haskyapictl -p 8080 -r .
-port: 8080 root: .
+$ haskyapi migrate
+$ haskyapi runserver -p 8080 -r .
+root: .
 listen on 8080
 http://localhost:8080/
 http://localhost:8080/index.html
@@ -27,9 +28,9 @@ $ cabal build
 
 ### options
 
-- `-p` : port number
-- `-r` : root directory
-- `-h` : help
+- `-p, --port` : port number
+- `-r, --root` : root directory
+- `-h, --help` : help
 
 
 ## TODO
