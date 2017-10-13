@@ -1,6 +1,6 @@
 {-# LANGUAGE ExistentialQuantification           #-}
 {-# LANGUAGE MultiWayIf, RankNTypes, BangPatterns#-}
-module Console.Cli (
+module Web.Haskyapi.Console.Cli (
   argparse,
   Option(..),
   Mode(..),
@@ -128,8 +128,8 @@ argparse args =
 main :: IO ()
 main = do
   print $ argparse ["runserver", "--root", "html"]
+  print $ argparse ["migrate", "--a"]
+  print $ argparse ["migrate", "--help"]
   print $ argparse ["migrate"]
   print $ argparse ["-v"]
-  let Message a = argparse ["-h"]
-  putStrLn a
 

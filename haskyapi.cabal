@@ -16,8 +16,9 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Web.Haskyapi
-                       Web.Haskyapi.Header
                        Web.Haskyapi.Tool
+                       Web.Haskyapi.Header
+                       Web.Haskyapi.Console.Cli
   build-depends:       base >= 4.7 && < 5
                      , split
                      , bytestring
@@ -35,10 +36,9 @@ executable haskyapi
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       Config
-                     , Console.Cli
-                     , Api.Hapi
-                     , Api.Checkout
-                     , Model
+                       Api.Hapi
+                       Api.Checkout
+                       Model
   build-depends:       base
                      , haskyapi
                      , mtl

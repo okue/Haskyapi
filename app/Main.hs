@@ -7,7 +7,7 @@ import System.Directory (getCurrentDirectory, getDirectoryContents)
 import System.Exit
 
 import Web.Haskyapi (runServer, Port)
-import Console.Cli (argparse, Option(..), Mode(..))
+import Web.Haskyapi.Console.Cli (argparse, Option(..), Mode(..))
 import Model (migrateAndInit)
 
 import qualified Api.Hapi as Hapi
@@ -18,6 +18,8 @@ main = do
   args <- getArgs
   case argparse args of
     Error x ->
+      putStrLn x
+    Message x ->
       putStrLn x
     Runserver opt ->
       mainProc opt
