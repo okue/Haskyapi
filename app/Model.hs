@@ -10,7 +10,7 @@ module Model (
 
 import Data.Maybe (listToMaybe)
 import Control.Monad.Reader   (ReaderT)
-import Control.Monad.IO.Class (liftIO)
+-- import Control.Monad.IO.Class (liftIO)
 import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite

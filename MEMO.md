@@ -67,3 +67,8 @@ DYLD_LIBRARY_PATH=~/Sites/haskyapi/src ~/Sites/haskyapi/bin/haskyapictl $1 $2 $3
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 ```
 
+```
+git log -p
+git show ...
+git log --stat
+```
