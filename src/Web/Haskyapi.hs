@@ -22,6 +22,7 @@ import Data.Time.LocalTime (utcToLocalTime, TimeZone(..))
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
+
 import Debug.Trace (trace)
 
 import qualified Web.Haskyapi.Tool as Tool
@@ -82,8 +83,9 @@ doResponse conn (root',subdomain,routing) = do
              Nothing -> Chtml
              Just ex -> toCType ex
       root = root' ++ dlookup (cutSubdomain host) subdomain
-  putStr "\n"
-  print =<< utcToLocalTime jst <$> getCurrentTime
+  putStr "["
+  putStr . show =<< utcToLocalTime jst <$> getCurrentTime
+  putStr "] "
   print hdr
   case (mtd, trg) of
     (GET, "/") ->
@@ -135,7 +137,7 @@ redirect conn path = do
   `catch`
     (\(SomeException e) -> print e)
   `finally`
-    close conn >> putStrLn ("close conn " ++ show conn)
+    close conn -- >> putStrLn ("close conn " ++ show conn)
 
 sender :: Status -> Socket -> ContentType -> C.ByteString -> IO ()
 sender st conn ct msg = do
@@ -144,7 +146,7 @@ sender st conn ct msg = do
   `catch`
     (\(SomeException e) -> print e)
   `finally`
-    close conn >> putStrLn ("close conn " ++ show conn)
+    close conn -- >> putStrLn ("close conn " ++ show conn)
 
 apisender :: Status -> Socket -> [Api] -> Endpoint -> Query -> Method -> Body -> IO ()
 apisender st conn routing endpoint qry mtd bdy = do
@@ -160,7 +162,7 @@ apisender st conn routing endpoint qry mtd bdy = do
   `catch`
     (\(SomeException e) -> print e)
   `finally`
-    close conn >> putStrLn ("close conn " ++ show conn)
+    close conn -- >> putStrLn ("close conn " ++ show conn)
 
 sendHeader :: Socket -> Status -> ContentType -> Int -> IO Int
 sendHeader conn st ct cl = do

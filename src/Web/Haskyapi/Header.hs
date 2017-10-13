@@ -2,6 +2,7 @@ module Web.Haskyapi.Header (
   parse,
   RqLine(..),
   Header(..),
+  pprint,
   Method(..),
   Query,
   Body,
@@ -64,16 +65,30 @@ data Header = Header {
                 hReferer       :: Maybe String
               } deriving (Eq)
 
+pprint :: Header -> IO ()
+pprint hdr = putStr $ L.intercalate "\n" [
+    "RequestLine   -> " ++ show (hRqLine hdr),
+    "Host          -> " ++ maybe "nothing" show (hHost hdr),
+    "UserAgent     -> " ++ maybe "nothing" show (hUserAgent hdr),
+    "Accept        -> " ++ maybe "nothing" show (hAccept hdr),
+    "ContentLength -> " ++ maybe "nothing" show (hContentLength hdr),
+    "ContentType   -> " ++ maybe "nothing" show (hContentType hdr),
+    "Referer       -> " ++ maybe "nothing" show (hReferer hdr)
+  ]
+
+
 instance Show Header where
-  show hdr = L.intercalate "\n" [
-      "RequestLine   -> " ++ show (hRqLine hdr),
-      "Host          -> " ++ maybe "nothing" show (hHost hdr),
-      "UserAgent     -> " ++ maybe "nothing" show (hUserAgent hdr),
-      "Accept        -> " ++ maybe "nothing" show (hAccept hdr),
-      "ContentLength -> " ++ maybe "nothing" show (hContentLength hdr),
-      "ContentType   -> " ++ maybe "nothing" show (hContentType hdr),
-      "Referer       -> " ++ maybe "nothing" show (hReferer hdr)
+  show hdr = unwords [
+      "[RequestLine: " ++ rqLine2Str (hRqLine hdr) ++ "]",
+      "[Host: " ++ maybe "nothing" show (hHost hdr) ++ "]",
+      "[UserAgent: " ++ maybe "nothing" show (hUserAgent hdr) ++ "]",
+      "[Accept: " ++ maybe "nothing" show (hAccept hdr) ++ "]",
+      "[ContentLength: " ++ maybe "nothing" show (hContentLength hdr) ++ "]",
+      "[ContentType: " ++ maybe "nothing" show (hContentType hdr) ++ "]",
+      "[Referer: " ++ maybe "nothing" show (hReferer hdr) ++ "]"
     ]
+    where
+      rqLine2Str (RqLine m s q) = unwords [ show m, s, show q ]
 
 unitheader :: Header
 unitheader = Header {
