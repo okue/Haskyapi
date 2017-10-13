@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiWayIf #-}
-import Network.HTTP.Simple
 import qualified Data.ByteString.Lazy.Char8 as L8
-import Control.Monad
-import Data.Aeson
+import Network.HTTP.Simple
 import Data.Maybe (catMaybes)
+import Data.Aeson
+import Control.Monad
 import GHC.Generics
 
 import Api.Checkout
