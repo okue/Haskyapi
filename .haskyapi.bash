@@ -1,11 +1,10 @@
 # Haskyapi Command Support
 
-first="runserver migrate --help -h --version -v"
-server="--root -r --port -p --ip -i --help -h"
-migrate="--help -h"
-
 _haskyapi()
 {
+  local first="runserver migrate --help -h --version -v"
+  local server="--root -r --port -p --ip -i --help -h"
+  local migrate="--help -h"
   local cur=${COMP_WORDS[COMP_CWORD]}
   local prev=${COMP_WORDS[COMP_CWORD-1]} # previous argument
   case "$COMP_CWORD" in
