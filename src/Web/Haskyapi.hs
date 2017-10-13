@@ -36,16 +36,16 @@ jst = TimeZone {
         timeZoneName = "JST"
       }
 
-runServer :: (Port, FilePath, SubDomain, [Api]) -> IO ()
-runServer (port,root,subdomain,routing) = do
-  soc <- serveSocket port
+runServer :: (Port, FilePath, String, SubDomain, [Api]) -> IO ()
+runServer (port,root,ip,subdomain,routing) = do
+  soc <- serveSocket ip port
   listen soc 5
   startSocket soc (root,subdomain,routing) `finally` close soc
 
-serveSocket :: Port -> IO Socket
-serveSocket port = do
+serveSocket :: String -> Port -> IO Socket
+serveSocket ip port = do
   soc  <- socket AF_INET Stream defaultProtocol
-  addr <- inet_addr "0.0.0.0"
+  addr <- inet_addr ip
   setSocketOption soc ReusePort (read port)
   bind soc (SockAddrInet (read port) addr)
   return soc

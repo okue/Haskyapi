@@ -3,6 +3,7 @@ module Config (
   domain,
   subdomain,
   db,
+  ip,
 ) where
 
 import Web.Haskyapi.Header (Domain, SubDomain)
@@ -16,4 +17,7 @@ subdomain = [
      ("test",     "/test/")
   ]
 
+ip = "0.0.0.0"
+
 db = T.pack "app.db"
+

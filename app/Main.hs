@@ -36,7 +36,7 @@ mainProc !opt = do
   putStrLn $ "listen on " ++ port
   putStrLn url
   mapM_ (putStrLn . \h -> url ++ h) =<< getfiles root
-  runServer (port, root, Config.subdomain, Hapi.routing)
+  runServer (port, root, Config.ip, Config.subdomain, Hapi.routing)
 
 getfiles :: FilePath -> IO [FilePath]
 getfiles root =
