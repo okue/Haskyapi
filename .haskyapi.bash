@@ -27,5 +27,5 @@ _haskyapi()
   esac
 }
 
-complete -F _haskyapi haskyapi
+complete -o default -F _haskyapi haskyapi
 

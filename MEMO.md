@@ -72,3 +72,9 @@ git log -p
 git show ...
 git log --stat
 ```
+
+## bash-completion
+
+```sh
+cp .haskyapi.bash ~/.haskyapi.bash
+```
