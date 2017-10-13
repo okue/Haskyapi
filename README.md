@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/okue/Haskyapi.svg?branch=master)](https://travis-ci.org/okue/Haskyapi)
 
-## What is Haskyapi ?
+## What is Haskyapi?
 
-HTTP sever implemented in Haskell.
+Haskyapi is a HTTP server implemented in Haskell.
 
 ### Build
 
@@ -26,7 +26,7 @@ or
 $ cabal build
 ```
 
-### options
+### Options
 
 - `-p, --port` : port number
 - `-r, --root` : root directory
