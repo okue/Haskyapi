@@ -39,6 +39,7 @@ executable haskyapi
                        Api.Hapi
                        Api.Checkout
                        Model
+                       ModelDef
   build-depends:       base
                      , haskyapi
                      , mtl
@@ -61,6 +62,8 @@ test-suite haskyapi-test
                      , app
   main-is:             Spec.hs
   other-modules:       Api.Checkout
+                       Config
+                       Model
   build-depends:       base
                      , haskyapi
                      , text

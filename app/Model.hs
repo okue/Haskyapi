@@ -16,11 +16,13 @@ import Database.Persist.TH
 import Database.Persist.Sqlite
 
 import qualified Config
+import ModelDef
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   Menu
     key   Int
     price Int
+    size  Size
     deriving Show
   Coupon
     key    String
@@ -51,23 +53,23 @@ migrateAndInit :: IO ()
 migrateAndInit = runSqlite Config.db $ do
   runMigration migrateAll
   mapM_ insert [
-      Menu 101 100,
-      Menu 102 130,
-      Menu 103 320,
-      Menu 104 320,
-      Menu 105 380,
-      Menu 201 150,
-      Menu 202 270,
-      Menu 203 320,
-      Menu 204 280,
-      Menu 301 100,
-      Menu 302 220,
-      Menu 303 250,
-      Menu 304 150,
-      Menu 305 240,
-      Menu 306 270,
-      Menu 307 100,
-      Menu 308 150
+      Menu 101 100 S,
+      Menu 102 130 S,
+      Menu 103 320 S,
+      Menu 104 320 S,
+      Menu 105 380 S,
+      Menu 201 150 S,
+      Menu 202 270 S,
+      Menu 203 320 S,
+      Menu 204 280 S,
+      Menu 301 100 S,
+      Menu 302 220 S,
+      Menu 303 250 S,
+      Menu 304 150 S,
+      Menu 305 240 S,
+      Menu 306 270 S,
+      Menu 307 100 S,
+      Menu 308 150 S
     ]
   mapM_ insert [
       Coupon "C001" 202 120,

@@ -78,3 +78,9 @@ git log --stat
 ```sh
 cp .haskyapi.bash ~/.haskyapi.bash
 ```
+
+## Apache Bench
+
+```sh
+ab -n 100 -c 10 http://0.0.0.0
+```
