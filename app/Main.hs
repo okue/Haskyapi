@@ -30,13 +30,14 @@ mainProc :: Option -> IO ()
 mainProc !opt = do
   let !root = oroot opt
       !port = oport opt
-      !ip   = oip   opt
-      !url = "http://" ++ ip ++ ":" ++ port ++ "/"
+      !_ip  = oip   opt
+      !ip   = if _ip == "null" then Config.ip else _ip
+      !url  = "http://" ++ ip ++ ":" ++ port ++ "/"
   putStrLn $ "root: "     ++ root
   putStrLn $ "listen on " ++ port
   putStrLn url
   mapM_ (putStrLn . \h -> url ++ h) =<< getfiles root
-  runServer (port, root, Config.ip, Config.subdomain, Hapi.routing)
+  runServer (port, root, ip, Config.subdomain, Hapi.routing)
 
 getfiles :: FilePath -> IO [FilePath]
 getfiles root =

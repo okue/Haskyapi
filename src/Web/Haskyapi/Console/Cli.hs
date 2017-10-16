@@ -68,7 +68,9 @@ argConfRunserver :: [Arg]
 argConfRunserver = [
      Arg ["-p", "--port"] "8080"      "port" "Port number"
     ,Arg ["-r", "--root"] "html"      "root" "Root directory"
-    ,Arg ["-i", "--ip"  ] "localhost" "ip"   "IP"
+    -- This part has to be Fixed ----------------
+    ,Arg ["-i", "--ip"  ] "null"      "ip"   "IP"
+    ---------------------------------------------
     ,Arg ["-h", "--help"] "...."      "help" "Help"
   ]
 
