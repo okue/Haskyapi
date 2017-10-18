@@ -40,7 +40,7 @@ jst = TimeZone {
 runServer :: (Port, FilePath, String, SubDomain, [Api]) -> IO ()
 runServer (port,root,ip,subdomain,routing) = do
   soc <- serveSocket ip port
-  listen soc 5
+  listen soc 10
   startSocket soc (root,subdomain,routing) `finally` close soc
 
 serveSocket :: String -> Port -> IO Socket
