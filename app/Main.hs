@@ -11,7 +11,7 @@ import Web.Haskyapi.Console.Cli (argparse, Option(..), Mode(..))
 import Model (migrateAndInit)
 
 import qualified Api.Hapi as Hapi
-import qualified Config
+import qualified Config.Config as Config
 
 main :: IO ()
 main = do

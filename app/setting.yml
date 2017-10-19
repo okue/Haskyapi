@@ -1,0 +1,13 @@
+###########################
+## settings for haskyapi ##
+###########################
+
+domain: localhost
+
+subdomain:
+  - test -> test/
+  - storage -> storage/
+
+ip: 0.0.0.0
+
+db: app.db

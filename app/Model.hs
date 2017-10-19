@@ -15,7 +15,7 @@ import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite
 
-import qualified Config
+import qualified Config.Config as Config
 import ModelDef
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
