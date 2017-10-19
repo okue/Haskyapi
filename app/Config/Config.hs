@@ -28,20 +28,17 @@ aux def k fun = do
         Nothing -> return def
         Just x  -> return $ fun x
 
+subdomain :: IO SubDomain
 subdomain = do
   tmp <- aux [] "subdomain" bval
   return $ map (\x -> (key x, aval x)) tmp
--- subdomain :: SubDomain
--- subdomain = [
---      ("test",     "/test/")
---   ]
 
 domain :: IO Domain
 domain = aux "localhost" "domain" aval
 
 ip = aux "0.0.0.0" "ip" aval
 
-db = aux "app.db" "db" aval
+db = T.pack <$> aux "app.db" "db" aval
 -- db = T.pack "app.db"
 
 main = do

@@ -5,8 +5,8 @@
 domain: localhost
 
 subdomain:
-  - test -> test/
-  - storage -> storage/
+  - test -> /test/
+  - storage -> /storage/
 
 ip: 0.0.0.0
 
