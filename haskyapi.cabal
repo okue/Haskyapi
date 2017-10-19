@@ -64,8 +64,10 @@ test-suite haskyapi-test
                      , app
   main-is:             Spec.hs
   other-modules:       Api.Checkout
-                       Config
+                       Config.Config
+                       Config.Parser
                        Model
+                       ModelDef
   build-depends:       base
                      , haskyapi
                      , text
@@ -76,6 +78,8 @@ test-suite haskyapi-test
                      , aeson
                      , bytestring
                      , http-conduit
+                     , parsec
+  default-language:    Haskell2010
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
