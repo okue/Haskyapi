@@ -13,8 +13,10 @@ import Model (migrateAndInit)
 import qualified Api.Hapi as Hapi
 import qualified Config.Config as Config
 
-main :: IO ()
-main = do
+main = haskyapi
+
+haskyapi :: IO ()
+haskyapi = do
   args <- getArgs
   case argparse args of
     Error x ->

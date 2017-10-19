@@ -10,11 +10,14 @@ module Config.Config (
 import qualified Data.Text as T
 import Data.Maybe
 import Control.Arrow ((&&&))
+import Control.Exception
 
 import Web.Haskyapi.Header (Domain, SubDomain)
 import Config.Parser
 
-!parsedFile = sparser "setting.yml" <$> readFile "setting.yml"
+!parsedFile =
+  sparser "setting.yml" <$> readFile "setting.yml"
+  `catch` \(SomeException e) -> return []
 
 slookup k [] = Nothing
 slookup k (x:xs)
