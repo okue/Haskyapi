@@ -15,7 +15,7 @@ import Control.Exception
 import Web.Haskyapi.Header (Domain, SubDomain)
 import Config.Parser
 
-!parsedFile =
+parsedFile =
   sparser "setting.yml" <$> readFile "setting.yml"
   `catch` \(SomeException e) -> return []
 
