@@ -1,6 +1,5 @@
 # This page is written in Markdown
 
-# このページはマークダウンで書かれています
 
 ```python
 import requests

@@ -41,6 +41,9 @@ $ cabal build
 - [ ] Automatic generator of api reference document
 - [ ] HTTPS
 
+## Bash-completion
+
+`.haskyapi.bash` is a bash-completion setting file for **haskyapi** command.
 
 ## Now
 
