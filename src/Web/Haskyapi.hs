@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 module Web.Haskyapi (
   runServer,
   Port
@@ -15,6 +16,7 @@ import qualified Data.List         as L
 import qualified Text.Markdown     as Md
 import qualified Data.Text.Lazy    as T
 import qualified Data.Text.Lazy.IO as T
+import Data.Char (ord)
 import Data.Maybe (fromMaybe)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Data.Time.Clock (getCurrentTime)
@@ -72,9 +74,35 @@ htmlhead = unlines [
   "</head>"
   ]
 
+
+data HandshakeType = HelloRequest
+                   | ClientHello
+                   | ServerHello
+                   | Certificate
+                   | ServerKeyExchange
+                   | CertificateRequest
+                   | ServerHelloDone
+                   | CertificateVerify
+                   | ClientKeyExchange
+                   | Finished
+                   deriving (Show)
+
+int2Handshake :: Int -> HandshakeType
+int2Handshake = \case
+  0  -> HelloRequest
+  1  -> ClientHello
+  2  -> ServerHello
+  11 -> Certificate
+  12 -> ServerKeyExchange
+  13 -> CertificateRequest
+  14 -> ServerHelloDone
+  15 -> CertificateVerify
+  16 -> ClientKeyExchange
+  20 -> Finished
+
 doResponse :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
 doResponse conn (root',subdomain,routing) = do
-  (str, _) <- recvFrom conn 1024
+  (str, _) <- recvFrom conn 2048
   let bdy =  last . L.splitOn "\r\n" $ C.unpack str
       hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd trg qry = hRqLine hdr
@@ -83,6 +111,7 @@ doResponse conn (root',subdomain,routing) = do
              Nothing -> Chtml
              Just ex -> toCType ex
       root = root' ++ dlookup (cutSubdomain host) subdomain
+  print $ unwords $ map (show . ord) $ C.unpack str
   putStr "["
   putStr . show =<< utcToLocalTime jst <$> getCurrentTime
   putStr "] "

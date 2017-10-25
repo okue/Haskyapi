@@ -50,15 +50,10 @@ DYLD_LIBRARY_PATH=~/Sites/haskyapi/src ~/Sites/haskyapi/bin/haskyapictl $1 $2 $3
 ## RESTful
 
 - `GET /entries`
-  - エントリー一覧を取得する
 - `POST /entries`
-  - エントリーを追加する
 - `GET /entries/$entry_id`
-  - 特定のエントリーを取得する
 - `PUT /entries/$entry_id`
-  - 特定のエントリーを置き換える
 - `DELTE /entries/$entry_id`
-  - 特定のエントリーを削除する
 
 
 ## Responsive
