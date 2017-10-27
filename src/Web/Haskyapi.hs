@@ -70,6 +70,7 @@ instance Show Status where
 htmlhead :: String
 htmlhead = unlines [
   "<head>",
+  "<link rel=\"stylesheet\" href=\"https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">",
   "<link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">",
   "</head>"
   ]
@@ -111,7 +112,7 @@ doResponse conn (root',subdomain,routing) = do
              Nothing -> Chtml
              Just ex -> toCType ex
       root = root' ++ dlookup (cutSubdomain host) subdomain
-  print $ unwords $ map (show . ord) $ C.unpack str
+  -- print $ unwords $ map (show . ord) $ C.unpack str
   putStr "["
   putStr . show =<< utcToLocalTime jst <$> getCurrentTime
   putStr "] "
