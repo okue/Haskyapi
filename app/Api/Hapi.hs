@@ -36,6 +36,7 @@ routing = [
             ,(POST, "/test",     test POST, Cplain)
             ,(GET,  "/add",      add,       Cplain)
             ,(GET,  "/title",    title,     Cplain)
+            ,(POST, "/title",    title,     Cplain)
             ,(POST, "/checkout", checkout,  Cjson)
             ,(GET,  "/checkout", checkout,  Cjson)
           ]
