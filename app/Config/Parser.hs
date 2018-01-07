@@ -14,6 +14,7 @@ data A = A { key :: String, aval :: String }
 sptab = many (oneOf " \t")
 nt = oneOf "\n" *> (oneOf "\t" <|> char ' ' *> char ' ')
 
+sparser :: String -> String -> Either ParseError [A]
 sparser name str = parse (_sparser []) name str
   where
     _sparser l = do
