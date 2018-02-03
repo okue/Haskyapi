@@ -15,7 +15,6 @@ import Data.Aeson
 
 import qualified Web.Haskyapi.Tool as Tool
 import qualified Model
-import Api.Checkout (checkout)
 import Web.Haskyapi.Header (
   Api,
   ApiFunc,
@@ -37,8 +36,6 @@ routing = [
             ,(GET,  "/add",      add,       Cplain)
             ,(GET,  "/title",    title,     Cplain)
             ,(POST, "/title",    title,     Cplain)
-            ,(POST, "/checkout", checkout,  Cjson)
-            ,(GET,  "/checkout", checkout,  Cjson)
           ]
 
 title :: ApiFunc
