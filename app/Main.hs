@@ -3,6 +3,7 @@ module Main where
 
 import Model (migrateAndInit)
 import qualified Api.Hapi as Hapi
-import Web.Haskyapi.Console.Cli (haskyapi)
+import Web.Haskyapi.Console.Cli (haskyapi, notUseMigrate)
 
-main = haskyapi Hapi.routing migrateAndInit
+-- main = haskyapi Hapi.routing migrateAndInit
+main = haskyapi Hapi.routing notUseMigrate

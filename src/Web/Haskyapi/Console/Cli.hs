@@ -5,6 +5,7 @@ module Web.Haskyapi.Console.Cli (
   argparse,
   Option(..),
   Mode(..),
+  notUseMigrate,
 ) where
 
 import System.Directory (getCurrentDirectory, getDirectoryContents)
@@ -182,6 +183,9 @@ haskyapi routing migrate = do
           where
             aux ('.':_) = False
             aux _ = True
+
+notUseMigrate :: IO ()
+notUseMigrate = return ()
 
 
 main :: IO ()
