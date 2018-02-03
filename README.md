@@ -33,11 +33,14 @@ $ cabal build
 - `-h, --help` : help
 
 
+`setting.yml` is a configuration file for these options.
+
+
 ## TODO
 
 - [x] Open Markdown file
-- [ ] How to use Database easily
-- [ ] How to implement RESTful api easily
+- [ ] Use Database easily
+- [ ] Implement RESTful api easily
 - [ ] Automatic generator of api reference document
 - [ ] HTTPS
 
