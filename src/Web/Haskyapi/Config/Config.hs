@@ -5,15 +5,19 @@ module Web.Haskyapi.Config.Config (
   subdomain,
   db,
   ip,
+  port,
 ) where
 
 import qualified Data.Text as T
 import Data.Maybe
+import Data.Map ((!))
 import Control.Arrow ((&&&))
 import Control.Exception
 
 import Web.Haskyapi.Header (Domain, SubDomain)
+import Web.Haskyapi.Config.Defaults (defs)
 import Web.Haskyapi.Config.Parser
+
 
 parsedFile =
   sparser "setting.yml" <$> readFile "setting.yml"
@@ -33,11 +37,11 @@ subdomain :: IO SubDomain
 subdomain = map (key &&& aval) <$> aux [] "subdomain" bval
 
 domain :: IO Domain
-domain = aux "localhost" "domain" aval
+domain = aux (defs ! "domain") "domain" aval
 
-ip = aux "0.0.0.0" "ip" aval
-
-db = T.pack <$> aux "app.db" "db" aval
+port = aux (defs ! "port") "port" aval
+ip   = aux (defs ! "ip") "ip" aval
+db   = T.pack <$> aux (defs ! "db") "db" aval
 
 main = do
   print =<< domain

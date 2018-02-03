@@ -2,10 +2,10 @@
 {-# LANGUAGE MultiWayIf, RankNTypes, BangPatterns#-}
 module Web.Haskyapi.Console.Cli (
   haskyapi,
+  haskyapiM,
   argparse,
   Option(..),
   Mode(..),
-  notUseMigrate,
 ) where
 
 import System.Directory (getCurrentDirectory, getDirectoryContents)
@@ -16,9 +16,10 @@ import Control.Applicative ((<$>))
 import qualified Data.List.Split as L
 import qualified Data.List       as L
 import Data.Maybe (fromMaybe)
-
+import Data.Map ((!))
 
 import qualified Web.Haskyapi.Config.Config as Config
+import Web.Haskyapi.Config.Defaults (defs)
 import Web.Haskyapi (runServer, Port)
 import Web.Haskyapi.Header (Api)
 
@@ -76,12 +77,10 @@ argConfMigrate = [
 
 argConfRunserver :: [Arg]
 argConfRunserver = [
-     Arg ["-p", "--port"] "8080"      "port" "Port number"
-    ,Arg ["-r", "--root"] "html"      "root" "Root directory"
-    -- This part has to be Fixed ----------------
-    ,Arg ["-i", "--ip"  ] "null"      "ip"   "IP"
-    ---------------------------------------------
-    ,Arg ["-h", "--help"] "...."      "help" "Help"
+     Arg ["-p", "--port"] (defs ! "port") "port" "Port number"
+    ,Arg ["-i", "--ip"  ] (defs ! "ip")   "ip"   "IP"
+    ,Arg ["-r", "--root"] "html"          "root" "Root directory"
+    ,Arg ["-h", "--help"] "...."          "help" "Help"
   ]
 
 verMessage = "haskyapi version 0.0.0.1"
@@ -149,8 +148,11 @@ argparse args =
 
 
 -- Main command which users' applications call
-haskyapi :: [Api] -> IO () -> IO ()
-haskyapi routing migrate = do
+haskyapi :: [Api] -> IO ()
+haskyapi routing = haskyapiM routing (return ())
+
+haskyapiM :: [Api] -> IO () -> IO ()
+haskyapiM routing migrate = do
   args <- getArgs
   case argparse args of
     Error x ->
@@ -164,13 +166,18 @@ haskyapi routing migrate = do
   where
     mainProc :: Option -> IO ()
     mainProc !opt = do
+      -- Config.hoge has a default value, and arguments.hoge also has the same default value.
+      -- Default values are defined in '../Config/Defaults.hs'
+      cpo <- Config.port
       cip <- Config.ip
       csd <- Config.subdomain
-      let !root = oroot opt
-          !port = oport opt
-          !_ip  = oip   opt
-          !ip   = if _ip == "null" then cip else _ip
-          !url  = "http://" ++ ip ++ ":" ++ port ++ "/"
+      let
+        !root = oroot opt
+        !_ip  = oip   opt
+        !_po  = oport opt
+        !ip   = if _ip == (defs ! "ip")   then cip else _ip
+        !port = if _po == (defs ! "port") then cpo else _po
+        !url  = "http://" ++ ip ++ ":" ++ port ++ "/"
       putStrLn $ "root: "     ++ root
       putStrLn $ "listen on " ++ port
       putStrLn url
@@ -183,9 +190,6 @@ haskyapi routing migrate = do
           where
             aux ('.':_) = False
             aux _ = True
-
-notUseMigrate :: IO ()
-notUseMigrate = return ()
 
 
 main :: IO ()

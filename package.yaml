@@ -17,6 +17,7 @@ description: Please see the README on Github at <https://github.com/okue/haskyap
 dependencies:
 - base >= 4.7 && < 5
 - split
+- containers
 - bytestring
 - utf8-string
 - text
@@ -38,6 +39,7 @@ dependencies:
 library:
   source-dirs: src
   other-modules:
+  - Web.Haskyapi.Config.Defaults
   - Web.Haskyapi.Config.Parser
   # - Web.Haskyapi.Config.Config
 

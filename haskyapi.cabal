@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 991adf70ab060ab92b72d9a7de2430fd7448225ccfef63a72c406e55bcbe33b4
+-- hash: 23fca1f928d50c27458e9b0ae3906f6fdf1eedfe8923e316b5deb55cbb72b3ca
 
 name:           haskyapi
 version:        0.0.0.1
@@ -34,6 +34,7 @@ library
     , base >=4.7 && <5
     , blaze-html
     , bytestring
+    , containers
     , directory
     , http-conduit
     , markdown
@@ -55,6 +56,7 @@ library
       Web.Haskyapi.Header
       Web.Haskyapi.Tool
   other-modules:
+      Web.Haskyapi.Config.Defaults
       Web.Haskyapi.Config.Parser
   default-language: Haskell2010
 
@@ -68,6 +70,7 @@ executable haskyapi
     , base >=4.7 && <5
     , blaze-html
     , bytestring
+    , containers
     , directory
     , haskyapi
     , http-conduit
@@ -101,6 +104,7 @@ test-suite test
     , base >=4.7 && <5
     , blaze-html
     , bytestring
+    , containers
     , directory
     , haskyapi
     , http-conduit
