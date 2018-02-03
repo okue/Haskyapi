@@ -1,0 +1,82 @@
+name:
+  haskyapi
+version:
+  0.0.0.1
+github:
+  "okue/haskyapi"
+license:
+  MIT
+author:
+  "okue"
+maintainer:
+  "example@example.com"
+copyright:
+  "2017 okue"
+
+extra-source-files:
+- README.md
+
+synopsis:
+  HTTP server
+category:
+  Web
+
+description:
+  Please see the README on Github at <https://github.com/okue/haskyapi#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- split
+- bytestring
+- utf8-string
+- text
+- markdown
+- blaze-html
+- mtl
+- network
+- time
+- directory
+- http-conduit
+- split
+- tagsoup
+- aeson
+- persistent
+- persistent-template
+- persistent-sqlite
+- parsec
+
+library:
+  source-dirs: src
+
+executables:
+  haskyapi:
+    main:
+      Main.hs
+    source-dirs:
+    - app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    other-modules:
+    - Config.Config
+    - Config.Parser
+    - Api.Hapi
+    - Api.Checkout
+    - Model
+    - ModelDef
+    dependencies:
+    - haskyapi
+
+tests:
+  test:
+    main:
+      Spec.hs
+    source-dirs:
+    - test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskyapi

@@ -1,88 +1,122 @@
-name:                haskyapi
-version:             0.0.0.1
-synopsis:            HTTP server
-description:         HTTP server
-homepage:            https://github.com/okue/Haskyapi#readme
-license:             MIT
-license-file:        LICENSE
-author:              okue
-maintainer:          example@example.com
-copyright:           2017 okue
-category:            Web
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 7bb391205b486c847835ad1cf6663cf0b12d689e168cc4270719602e22212b69
 
-library
-  hs-source-dirs:      src
-  exposed-modules:     Web.Haskyapi
-                       Web.Haskyapi.Tool
-                       Web.Haskyapi.Header
-                       Web.Haskyapi.Console.Cli
-  build-depends:       base >= 4.7 && < 5
-                     , split
-                     , bytestring
-                     , utf8-string
-                     , text
-                     , markdown
-                     , blaze-html
-                     , mtl
-                     , network
-                     , time
-  default-language:    Haskell2010
+name:           haskyapi
+version:        0.0.0.1
+synopsis:       HTTP server
+description:    Please see the README on Github at <https://github.com/okue/haskyapi#readme>
+category:       Web
+homepage:       https://github.com/okue/haskyapi#readme
+bug-reports:    https://github.com/okue/haskyapi/issues
+author:         okue
+maintainer:     example@example.com
+copyright:      2017 okue
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
-executable haskyapi
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  other-modules:       Config.Config
-                       Config.Parser
-                       Api.Hapi
-                       Api.Checkout
-                       Model
-                       ModelDef
-  build-depends:       base
-                     , haskyapi
-                     , mtl
-                     , directory
-                     , http-conduit
-                     , split
-                     , tagsoup
-                     , aeson
-                     , bytestring
-                     , utf8-string
-                     , text
-                     , persistent
-                     , persistent-template
-                     , persistent-sqlite
-                     , parsec
-  default-language:    Haskell2010
-
-test-suite haskyapi-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-                     , app
-  main-is:             Spec.hs
-  other-modules:       Api.Checkout
-                       Config.Config
-                       Config.Parser
-                       Model
-                       ModelDef
-  build-depends:       base
-                     , haskyapi
-                     , text
-                     , mtl
-                     , persistent
-                     , persistent-template
-                     , persistent-sqlite
-                     , aeson
-                     , bytestring
-                     , http-conduit
-                     , parsec
-  default-language:    Haskell2010
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
-  location: https://github.com/okue/Haskyapi
+  type: git
+  location: https://github.com/okue/haskyapi
+
+library
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring
+    , directory
+    , http-conduit
+    , markdown
+    , mtl
+    , network
+    , parsec
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , split
+    , tagsoup
+    , text
+    , time
+    , utf8-string
+  exposed-modules:
+      Web.Haskyapi
+      Web.Haskyapi.Console.Cli
+      Web.Haskyapi.Header
+      Web.Haskyapi.Tool
+  other-modules:
+      Paths_haskyapi
+  default-language: Haskell2010
+
+executable haskyapi
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring
+    , directory
+    , haskyapi
+    , http-conduit
+    , markdown
+    , mtl
+    , network
+    , parsec
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , split
+    , tagsoup
+    , text
+    , time
+    , utf8-string
+  other-modules:
+      Config.Config
+      Config.Parser
+      Api.Hapi
+      Api.Checkout
+      Model
+      ModelDef
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring
+    , directory
+    , haskyapi
+    , http-conduit
+    , markdown
+    , mtl
+    , network
+    , parsec
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , split
+    , tagsoup
+    , text
+    , time
+    , utf8-string
+  other-modules:
+      Paths_haskyapi
+  default-language: Haskell2010
