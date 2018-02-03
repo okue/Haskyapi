@@ -75,32 +75,6 @@ htmlhead = unlines [
   "</head>"
   ]
 
-
-data HandshakeType = HelloRequest
-                   | ClientHello
-                   | ServerHello
-                   | Certificate
-                   | ServerKeyExchange
-                   | CertificateRequest
-                   | ServerHelloDone
-                   | CertificateVerify
-                   | ClientKeyExchange
-                   | Finished
-                   deriving (Show)
-
-int2Handshake :: Int -> HandshakeType
-int2Handshake = \case
-  0  -> HelloRequest
-  1  -> ClientHello
-  2  -> ServerHello
-  11 -> Certificate
-  12 -> ServerKeyExchange
-  13 -> CertificateRequest
-  14 -> ServerHelloDone
-  15 -> CertificateVerify
-  16 -> ClientKeyExchange
-  20 -> Finished
-
 doResponse :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
 doResponse conn (root',subdomain,routing) = do
   (str, _) <- recvFrom conn 2048

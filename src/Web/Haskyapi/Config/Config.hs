@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiWayIf, BangPatterns#-}
 {-# LANGUAGE OverloadedStrings, LambdaCase #-}
-module Config.Config (
+module Web.Haskyapi.Config.Config (
   domain,
   subdomain,
   db,
@@ -13,7 +13,7 @@ import Control.Arrow ((&&&))
 import Control.Exception
 
 import Web.Haskyapi.Header (Domain, SubDomain)
-import Config.Parser
+import Web.Haskyapi.Config.Parser
 
 parsedFile =
   sparser "setting.yml" <$> readFile "setting.yml"

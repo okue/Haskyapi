@@ -14,7 +14,6 @@ import Data.Maybe (catMaybes)
 import Data.Aeson
 
 import qualified Web.Haskyapi.Tool as Tool
-import qualified Model
 import Web.Haskyapi.Header (
   Api,
   ApiFunc,

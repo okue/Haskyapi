@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards, BangPatterns #-}
-module Config.Parser (
+module Web.Haskyapi.Config.Parser (
   sparser,
   A (..),
 ) where

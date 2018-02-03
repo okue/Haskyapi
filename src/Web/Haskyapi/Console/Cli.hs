@@ -1,17 +1,26 @@
 {-# LANGUAGE ExistentialQuantification           #-}
 {-# LANGUAGE MultiWayIf, RankNTypes, BangPatterns#-}
 module Web.Haskyapi.Console.Cli (
+  haskyapi,
   argparse,
   Option(..),
   Mode(..),
 ) where
 
+import System.Directory (getCurrentDirectory, getDirectoryContents)
 import System.Environment (getArgs)
+import System.Exit
 import Control.Monad.State
 import Control.Applicative ((<$>))
 import qualified Data.List.Split as L
 import qualified Data.List       as L
 import Data.Maybe (fromMaybe)
+
+
+import qualified Web.Haskyapi.Config.Config as Config
+import Web.Haskyapi (runServer, Port)
+import Web.Haskyapi.Header (Api)
+
 
 --------------------------------------------------------
 -- command option
@@ -93,7 +102,7 @@ argparse args =
     checkmode ("-h":_)         = Message mkHelpAll
     checkmode _                = Error "invalid mode!!"
     mkHelpAll :: String
-    mkHelpAll = mkHelp [("haskyapi runserver\n", argConfMigrate), ("haskyapi migrate\n", argConfRunserver)]
+    mkHelpAll = mkHelp [("haskyapi migrate\n", argConfMigrate), ("haskyapi runserver\n", argConfRunserver)]
     mkHelp lst = concat $ foldl (\l (x,y) -> [x, aux y] ++ l ) [] lst
       where
         aux = unlines . map aux'
@@ -136,6 +145,43 @@ argparse args =
                  | nm == "root" -> modify (\x -> x { oroot = a }) >> aux acfs
                  | nm == "ip"   -> modify (\x -> x { oip   = a }) >> aux acfs
                  | otherwise    -> aux acfs
+
+
+-- Main command which users' applications call
+haskyapi :: [Api] -> IO () -> IO ()
+haskyapi routing migrate = do
+  args <- getArgs
+  case argparse args of
+    Error x ->
+      putStrLn x
+    Message x ->
+      putStrLn x
+    Runserver opt ->
+      mainProc opt
+    Migrate opt ->
+      migrate
+  where
+    mainProc :: Option -> IO ()
+    mainProc !opt = do
+      cip <- Config.ip
+      csd <- Config.subdomain
+      let !root = oroot opt
+          !port = oport opt
+          !_ip  = oip   opt
+          !ip   = if _ip == "null" then cip else _ip
+          !url  = "http://" ++ ip ++ ":" ++ port ++ "/"
+      putStrLn $ "root: "     ++ root
+      putStrLn $ "listen on " ++ port
+      putStrLn url
+      mapM_ (putStrLn . \h -> url ++ h) =<< getfiles root
+      runServer (port, root, ip, csd, routing)
+      where
+        getfiles :: FilePath -> IO [FilePath]
+        getfiles root =
+          filter aux <$> getDirectoryContents root
+          where
+            aux ('.':_) = False
+            aux _ = True
 
 
 main :: IO ()

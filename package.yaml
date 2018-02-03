@@ -1,28 +1,18 @@
-name:
-  haskyapi
-version:
-  0.0.0.1
-github:
-  "okue/haskyapi"
-license:
-  MIT
-author:
-  "okue"
-maintainer:
-  "example@example.com"
-copyright:
-  "2017 okue"
+name:       haskyapi
+version:    0.0.0.1
+license:    MIT
+author:     "okue"
+github:     "okue/haskyapi"
+maintainer: "example@example.com"
+copyright:  "2017 okue"
 
 extra-source-files:
 - README.md
 
-synopsis:
-  HTTP server
-category:
-  Web
+synopsis: HTTP server
+category: Web
 
-description:
-  Please see the README on Github at <https://github.com/okue/haskyapi#readme>
+description: Please see the README on Github at <https://github.com/okue/haskyapi#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -47,11 +37,13 @@ dependencies:
 
 library:
   source-dirs: src
+  other-modules:
+  - Web.Haskyapi.Config.Parser
+  # - Web.Haskyapi.Config.Config
 
 executables:
   haskyapi:
-    main:
-      Main.hs
+    main: Main.hs
     source-dirs:
     - app
     ghc-options:
@@ -59,8 +51,6 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     other-modules:
-    - Config.Config
-    - Config.Parser
     - Api.Hapi
     - Model
     - ModelDef
@@ -69,8 +59,7 @@ executables:
 
 tests:
   test:
-    main:
-      Spec.hs
+    main: Spec.hs
     source-dirs:
     - test
     - app
@@ -79,8 +68,6 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     other-modules:
-    - Config.Config
-    - Config.Parser
     - Api.Hapi
     - Model
     - ModelDef

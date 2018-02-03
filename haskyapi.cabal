@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ff5bc777bd8965fd127b87ebe920a8082d6d0911965ae83145205a0e7d5adac5
+-- hash: 991adf70ab060ab92b72d9a7de2430fd7448225ccfef63a72c406e55bcbe33b4
 
 name:           haskyapi
 version:        0.0.0.1
@@ -50,11 +50,12 @@ library
     , utf8-string
   exposed-modules:
       Web.Haskyapi
+      Web.Haskyapi.Config.Config
       Web.Haskyapi.Console.Cli
       Web.Haskyapi.Header
       Web.Haskyapi.Tool
   other-modules:
-      Paths_haskyapi
+      Web.Haskyapi.Config.Parser
   default-language: Haskell2010
 
 executable haskyapi
@@ -83,8 +84,6 @@ executable haskyapi
     , time
     , utf8-string
   other-modules:
-      Config.Config
-      Config.Parser
       Api.Hapi
       Model
       ModelDef
@@ -118,8 +117,6 @@ test-suite test
     , time
     , utf8-string
   other-modules:
-      Config.Config
-      Config.Parser
       Api.Hapi
       Model
       ModelDef
