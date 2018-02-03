@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7bb391205b486c847835ad1cf6663cf0b12d689e168cc4270719602e22212b69
+-- hash: ff5bc777bd8965fd127b87ebe920a8082d6d0911965ae83145205a0e7d5adac5
 
 name:           haskyapi
 version:        0.0.0.1
@@ -86,7 +86,6 @@ executable haskyapi
       Config.Config
       Config.Parser
       Api.Hapi
-      Api.Checkout
       Model
       ModelDef
   default-language: Haskell2010
@@ -96,6 +95,7 @@ test-suite test
   main-is: Spec.hs
   hs-source-dirs:
       test
+      app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -118,5 +118,9 @@ test-suite test
     , time
     , utf8-string
   other-modules:
-      Paths_haskyapi
+      Config.Config
+      Config.Parser
+      Api.Hapi
+      Model
+      ModelDef
   default-language: Haskell2010

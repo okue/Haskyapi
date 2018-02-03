@@ -62,7 +62,6 @@ executables:
     - Config.Config
     - Config.Parser
     - Api.Hapi
-    - Api.Checkout
     - Model
     - ModelDef
     dependencies:
@@ -74,9 +73,16 @@ tests:
       Spec.hs
     source-dirs:
     - test
+    - app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    other-modules:
+    - Config.Config
+    - Config.Parser
+    - Api.Hapi
+    - Model
+    - ModelDef
     dependencies:
     - haskyapi
