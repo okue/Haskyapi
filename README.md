@@ -47,29 +47,32 @@ module Main where
 import Web.Haskyapi.Console.Cli (haskyapi)
 import Web.Haskyapi.Header (
   Api,
-  ApiFunc,        -- type of api functions
+  ApiFunc,        -- type of api functions, Query -> Body -> IO String
   Method(..),     -- GET, POST, ...
   ContentType(..) -- Cplain, Cjson, ...
   )
 
 routing :: [Api]
 routing = [
-             (GET,  "/test", test, Cplain)
-            ,(POST, "/test", test, Cplain)
+             (GET,  "/test", test , Cplain)
+            ,(POST, "/test", test2, Cplain)
           ]
 
 test :: ApiFunc
-test qry _ = return "This is GET."
-test qry _ = return "This is POST."
+test qry bdy = return "This is GET."
+
+test2 :: ApiFunc
+test2 qry bdy = return "This is POST."
 
 main = haskyapi routing
 ```
 
+
 ```sh
 $ runhaskell Main.hs runserver
-$ curl -XGET http://localhost:8080/api/title
+$ curl -XGET http://localhost:8080/api/test
 This is GET.
-$ curl -XPOST http://localhost:8080/api/title
+$ curl -XPOST http://localhost:8080/api/test
 This is POST.
 ```
 
