@@ -2,17 +2,17 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23fca1f928d50c27458e9b0ae3906f6fdf1eedfe8923e316b5deb55cbb72b3ca
+-- hash: 3b909307148be9caa35a1053e4ccbd451d0286afc07e8c70511815d2f50dffdc
 
 name:           haskyapi
-version:        0.0.0.1
+version:        0.0.0.2
 synopsis:       HTTP server
-description:    Please see the README on Github at <https://github.com/okue/haskyapi#readme>
+description:    Haskell HTTP server.
 category:       Web
 homepage:       https://github.com/okue/haskyapi#readme
 bug-reports:    https://github.com/okue/haskyapi/issues
 author:         okue
-maintainer:     example@example.com
+maintainer:     nogideca@gmail.com
 copyright:      2017 okue
 license:        MIT
 license-file:   LICENSE

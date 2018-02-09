@@ -65,6 +65,15 @@ test qry _ = return "This is POST."
 main = haskyapi routing
 ```
 
+```sh
+$ runhaskell Main.hs runserver
+$ curl -XGET http://localhost:8080/api/title
+This is GET.
+$ curl -XPOST http://localhost:8080/api/title
+This is POST.
+```
+
+
 ## TODO
 
 - [x] Open Markdown file
