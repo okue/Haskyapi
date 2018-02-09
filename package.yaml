@@ -3,7 +3,7 @@ version:    0.0.0.1
 license:    MIT
 author:     "okue"
 github:     "okue/haskyapi"
-maintainer: "example@example.com"
+maintainer: "nogideca@gmail.com"
 copyright:  "2017 okue"
 
 extra-source-files:
@@ -12,7 +12,7 @@ extra-source-files:
 synopsis: HTTP server
 category: Web
 
-description: Please see the README on Github at <https://github.com/okue/haskyapi#readme>
+description: Haskell HTTP server.
 
 dependencies:
 - base >= 4.7 && < 5

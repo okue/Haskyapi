@@ -12,7 +12,7 @@ Haskyapi is a HTTP server implemented in Haskell.
 $ stack build
 $ stack install
 $ haskyapi migrate
-$ haskyapi runserver -p 8080 -r .
+$ haskyapi runserver --port 8080 --root .
 root: .
 listen on 8080
 http://localhost:8080/
@@ -35,6 +35,35 @@ $ cabal build
 
 `setting.yml` is a configuration file for these options.
 
+
+## How to use as web framework
+
+`app/Main.hs` in this repository is an example program using haskyapi as web framework.
+
+Here is a very simple example.
+
+```hs
+module Main where
+import Web.Haskyapi.Console.Cli (haskyapi)
+import Web.Haskyapi.Header (
+  Api,
+  ApiFunc,        -- type of api functions
+  Method(..),     -- GET, POST, ...
+  ContentType(..) -- Cplain, Cjson, ...
+  )
+
+routing :: [Api]
+routing = [
+             (GET,  "/test", test, Cplain)
+            ,(POST, "/test", test, Cplain)
+          ]
+
+test :: ApiFunc
+test qry _ = return "This is GET."
+test qry _ = return "This is POST."
+
+main = haskyapi routing
+```
 
 ## TODO
 
