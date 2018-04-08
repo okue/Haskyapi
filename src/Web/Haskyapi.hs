@@ -1,11 +1,8 @@
-{-# LANGUAGE LambdaCase #-}
+-- {-# LANGUAGE LambdaCase #-}
 module Web.Haskyapi (
   runServer,
   Port
 ) where
-
--- http://hackage.haskell.org/package/network-2.4.0.1/docs/Network-Socket.html 
--- http://qiita.com/asukamirai/items/522cc3c07d7d9ad21dfa 
 
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
@@ -70,8 +67,11 @@ instance Show Status where
 htmlhead :: String
 htmlhead = unlines [
   "<head>",
-  "<link rel=\"stylesheet\" href=\"https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">",
-  "<link rel=\"stylesheet\" href=\"/css/markdown.css\" type=\"text/css\"/>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">",
+  "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>",
+  "<link rel='stylesheet' href='/css/markdown.css' type='text/css'/>",
+  "<link rel='stylesheet' href='https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css' type='text/plain' />",
+  "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>",
+  "<style>.markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; } @media (max-width: 767px) {.markdown-body}</style>",
   "</head>"
   ]
 
@@ -104,7 +104,7 @@ doResponse conn (root',subdomain,routing) = do
         (Cmarkdown, Just cpath) -> do
           tmp <- T.readFile $ root ++ cpath
           let mdfile = renderHtml $ Md.markdown Md.def tmp
-              aux b  = htmlhead ++ "<body>" ++ b ++ "</body>"
+              aux b  = htmlhead ++ "<body class='markdown-body'>" ++ b ++ "</body>"
           sender OK conn ct $ C.pack . B8.encodeString . aux . T.unpack $ mdfile
         (_, Just cpath) -> sender OK conn ct =<< C.readFile (root ++ cpath)
         (_, Nothing)    -> redirect conn path
@@ -189,9 +189,7 @@ cutSubdomain = head . L.splitOn "."
 
 dlookup :: String -> SubDomain -> String
 dlookup d subdomain =
-  case lookup d subdomain of
-    Just x  -> x
-    Nothing -> ""
+  fromMaybe "" (lookup d subdomain)
 
 rlookup :: (Method, Endpoint) -> [Api] -> Maybe Api
 rlookup _ [] = Nothing

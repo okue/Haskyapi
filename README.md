@@ -93,7 +93,5 @@ This is POST.
 
 Haskyapi works at [okue.site:80](http://okue.site/)
 
-- [Simple TODO](http://ftodo.okue.site/)
 - [/markdown-page.md](http://okue.site/markdown-page.md)
 - [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site/api/title?url=https://github.com/okue/Haskyapi)
-
