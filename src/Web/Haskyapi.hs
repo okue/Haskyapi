@@ -67,9 +67,7 @@ instance Show Status where
 htmlhead :: String
 htmlhead = unlines [
   "<head>",
-  "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>",
   "<link rel='stylesheet' href='/css/markdown.css' type='text/css'/>",
-  "<link rel='stylesheet' href='https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css' type='text/plain' />",
   "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>",
   "<style>.markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; } @media (max-width: 767px) {.markdown-body}</style>",
   "</head>"
