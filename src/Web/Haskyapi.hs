@@ -21,6 +21,7 @@ import Data.Time.LocalTime (utcToLocalTime, TimeZone(..))
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
+import System.Directory
 
 import Debug.Trace (trace)
 
@@ -67,18 +68,21 @@ instance Show Status where
 htmlhead :: String
 htmlhead = unlines [
   "<head>",
+  "<link rel='icon' type='image/jpg' href='.icon.ico'>",
   "<link rel='stylesheet' href='/css/markdown.css' type='text/css'/>",
+  "<link rel='stylesheet' href='https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css' type='text/css'/>",
   "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>",
   "<style>.markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; } @media (max-width: 767px) {.markdown-body}</style>",
   "</head>"
   ]
 
 doResponse :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
-doResponse conn (root',subdomain,routing) = do
+doResponse conn (root', subdomain, routing) = do
   (str, _) <- recvFrom conn 2048
   let bdy =  last . L.splitOn "\r\n" $ C.unpack str
       hdr = parse . L.splitOn "\r\n" $ C.unpack str
-      RqLine mtd trg qry = hRqLine hdr
+      RqLine mtd _trg qry = hRqLine hdr
+      trg = unescape _trg
       host = fromMaybe "" $ hHost hdr
       ct = case Tool.getFileExt trg of
              Nothing -> Chtml
@@ -94,26 +98,50 @@ doResponse conn (root',subdomain,routing) = do
       (sender OK conn Chtml =<< C.readFile (root ++ "/index.html"))
       `catch` \(SomeException e) -> do
         print e
-        sender NotFound conn ct $ C.pack "404 Not Found"
+        sender NotFound conn ct =<< genFilerPage "."
+        -- sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn routing endpoint qry mtd bdy
     (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
           tmp <- T.readFile $ root ++ cpath
-          let mdfile = renderHtml $ Md.markdown Md.def tmp
-              aux b  = htmlhead ++ "<body class='markdown-body'>" ++ b ++ "</body>"
-          sender OK conn ct $ C.pack . B8.encodeString . aux . T.unpack $ mdfile
+          sender OK conn ct . markdown2html $ tmp
         (_, Just cpath) -> sender OK conn ct =<< C.readFile (root ++ cpath)
         (_, Nothing)    -> redirect conn path
       `catch`
         \(SomeException e) -> do
           print e
-          sender NotFound conn ct $ C.pack "404 Not Found"
+          sender NotFound conn ct =<< genFilerPage (tail path)
+          -- sender NotFound conn ct $ C.pack "404 Not Found"
     (POST, _) ->
       sender OK conn ct $ C.pack "Please POST request to /api"
     _ ->
       sender NotFound conn Chtml $ C.pack "404 Not Found"
+
+markdown2html file =
+  let mdfile = renderHtml $ Md.markdown Md.def file
+      aux b = htmlhead ++ "<body class='markdown-body'>" ++ b ++ "</body>"
+  in C.pack . B8.encodeString . aux . T.unpack $ mdfile
+
+unescape = unwords . L.splitOn "%20"
+
+genFilerPage _path = do
+  let path = unescape _path
+  ls    <- getDirectoryContents path
+  alist <- mapM mkAnker $ L.sort ls
+  return . markdown2html . T.pack . unlines $ ("## " ++ path) : alist
+  `catch`
+    \(SomeException e) -> do
+      print e
+      return $ C.pack "404 Not Found"
+  where
+    mkAnker ".." = return "[..](..)"
+    mkAnker ('.':name) = return ""
+    mkAnker _name = do
+      let name = unescape _name
+      exist <- doesFileExist name
+      return $ "<p><a href='" ++ name ++ "'>" ++ name ++ "</a></p>"
 
 ----------------------------------
 -- hoge/     -> hoge/index.html
