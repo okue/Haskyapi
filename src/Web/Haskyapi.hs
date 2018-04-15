@@ -126,26 +126,28 @@ markdown2html file =
 
 unescape = unwords . L.splitOn "%20"
 
-tablehead = "<head><style type='text/css'>\
-\ table{\
-\   width: 100%;\
-\   border-collapse:collapse;\
-\   margin-left: 5;\
-\ }\
-\ td,th{\
-\   padding:10px;\
-\ }\
-\ th{\
-\   color:#fff;\
-\   background:#005ab3;\
-\ }\
-\ table tr:nth-child(odd){\
-\   background:#e6f2ff;\
-\ }\
-\ td{\
-\   border-bottom:2px solid #80bcff;\
-\ }\
-\ </style><head>"
+tablehead = "<head>\
+\<link rel='icon' type='image/jpg' href='.icon.ico'>\
+\<style type='text/css'>\
+\table{\
+\  width: 100%;\
+\  border-collapse:collapse;\
+\  margin-left: 5;\
+\}\
+\td,th{\
+\  padding:10px;\
+\}\
+\th{\
+\  color:#fff;\
+\  background:#005ab3;\
+\}\
+\table tr:nth-child(odd){\
+\  background:#e6f2ff;\
+\}\
+\td{\
+\  border-bottom:2px solid #80bcff;\
+\}\
+\</style><head>"
 
 genFilerPage _path = do
   let path = unescape _path
