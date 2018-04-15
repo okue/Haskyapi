@@ -126,22 +126,46 @@ markdown2html file =
 
 unescape = unwords . L.splitOn "%20"
 
+tablehead = "<head><style type='text/css'>\
+\ table{\
+\   width: 100%;\
+\   border-collapse:collapse;\
+\   margin-left: 5;\
+\ }\
+\ td,th{\
+\   padding:10px;\
+\ }\
+\ th{\
+\   color:#fff;\
+\   background:#005ab3;\
+\ }\
+\ table tr:nth-child(odd){\
+\   background:#e6f2ff;\
+\ }\
+\ td{\
+\   border-bottom:2px solid #80bcff;\
+\ }\
+\ </style><head>"
+
 genFilerPage _path = do
   let path = unescape _path
   ls    <- getDirectoryContents path
   alist <- mapM mkAnker $ L.sort ls
-  return . markdown2html . T.pack . unlines $ ("## " ++ path) : alist
+  return . C.pack . B8.encodeString . unlines $
+    tablehead
+    : ("<table><thead><th>" ++ path ++ "</th></thead><tbody>")
+    : (alist ++ ["</tbody></table>"])
   `catch`
     \(SomeException e) -> do
       print e
       return $ C.pack "404 Not Found"
   where
-    mkAnker ".." = return "[..](..)"
+    mkAnker ".." = return "<tr><td><a href='..'>..</a></td></tr>"
     mkAnker ('.':name) = return ""
     mkAnker _name = do
       let name = unescape _name
       exist <- doesFileExist name
-      return $ "<p><a href='" ++ name ++ "'>" ++ name ++ "</a></p>"
+      return $ "<tr><td><a href='" ++ name ++ "'>" ++ name ++ "</a></td></tr>"
 
 ----------------------------------
 -- hoge/     -> hoge/index.html
