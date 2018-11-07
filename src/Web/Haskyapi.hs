@@ -1,4 +1,4 @@
--- {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiWayIf #-}
 module Web.Haskyapi (
   runServer,
   Port
@@ -13,15 +13,16 @@ import qualified Data.List         as L
 import qualified Text.Markdown     as Md
 import qualified Data.Text.Lazy    as T
 import qualified Data.Text.Lazy.IO as T
-import Data.Char (ord)
-import Data.Maybe (fromMaybe)
+-- import Data.Char (ord)
+import Data.Maybe (fromMaybe, catMaybes)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.LocalTime (utcToLocalTime, TimeZone(..))
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
-import System.Directory
+import qualified System.Directory as D
+import Text.Printf (printf)
 
 import Debug.Trace (trace)
 
@@ -53,7 +54,7 @@ serveSocket ip port = do
 
 startSocket :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
 startSocket soc cf = forever $ do
-  (conn, addr) <- accept soc
+  (conn, _addr) <- accept soc
   forkIO $ doResponse conn cf
 
 data Status = OK
@@ -89,16 +90,15 @@ doResponse conn (root', subdomain, routing) = do
              Just ex -> toCType ex
       root = root' ++ dlookup (cutSubdomain host) subdomain
   -- print $ unwords $ map (show . ord) $ C.unpack str
-  putStr "["
-  putStr . show =<< utcToLocalTime jst <$> getCurrentTime
-  putStr "] "
-  print hdr
+
+  curTime <- show . utcToLocalTime jst <$> getCurrentTime
+  printf "[%s] %s\n" curTime (show hdr)
   case (mtd, trg) of
     (GET, "/") ->
       (sender OK conn Chtml =<< C.readFile (root ++ "/index.html"))
       `catch` \(SomeException e) -> do
-        print e
-        sender NotFound conn ct =<< genFilerPage "."
+        errorlog e "doResponse"
+        sender NotFound conn ct =<< genFilerPage root "/."
         -- sender NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
       apisender OK conn routing endpoint qry mtd bdy
@@ -111,8 +111,8 @@ doResponse conn (root', subdomain, routing) = do
         (_, Nothing)    -> redirect conn path
       `catch`
         \(SomeException e) -> do
-          print e
-          sender NotFound conn ct =<< genFilerPage (tail path)
+          errorlog e "doResponse"
+          sender NotFound conn ct =<< genFilerPage root path
           -- sender NotFound conn ct $ C.pack "404 Not Found"
     (POST, _) ->
       sender OK conn ct $ C.pack "Please POST request to /api"
@@ -126,48 +126,71 @@ markdown2html file =
 
 unescape = unwords . L.splitOn "%20"
 
-tablehead = "<head>\
+head4table = "<head>\
 \<link rel='icon' type='image/jpg' href='.icon.ico'>\
 \<style type='text/css'>\
-\table{\
-\  width: 100%;\
-\  border-collapse:collapse;\
-\  margin-left: 5;\
-\}\
-\td,th{\
-\  padding:10px;\
-\}\
-\th{\
-\  color:#fff;\
-\  background:#005ab3;\
-\}\
-\table tr:nth-child(odd){\
-\  background:#e6f2ff;\
-\}\
-\td{\
-\  border-bottom:2px solid #80bcff;\
-\}\
-\</style><head>"
+\ table{\
+\   width: 100%;\
+\   border-collapse:collapse;\
+\   margin-left: 5;\
+\ }\
+\ td,th{\
+\   padding:10px;\
+\ }\
+\ th{\
+\   color:#fff;\
+\   background:#005ab3;\
+\ }\
+\ table tr:nth-child(odd){\
+\   background:#e6f2ff;\
+\ }\
+\ td{\
+\   border-bottom:2px solid #80bcff;\
+\ }\
+\</style>\
+\</head>"
 
-genFilerPage _path = do
-  let path = unescape _path
-  ls    <- getDirectoryContents path
-  alist <- mapM mkAnker $ L.sort ls
-  return . C.pack . B8.encodeString . unlines $
-    tablehead
-    : ("<table><thead><th>" ++ path ++ "</th></thead><tbody>")
-    : (alist ++ ["</tbody></table>"])
+errorlog err funcName =
+  printf "<<%s error>> reason is %s\n" funcName (show err)
+
+genFilerPage root _path = do
+  ls    <- D.getDirectoryContents currentDirectory
+  alist <- catMaybes <$> mapM mkAnker (L.sort ls)
+  return . C.pack . B8.encodeString $
+    head4table ++ mkTable (mkTHead path ++ mkTBody alist)
   `catch`
     \(SomeException e) -> do
-      print e
+      errorlog e  "genFilerPage"
       return $ C.pack "404 Not Found"
   where
-    mkAnker ".." = return "<tr><td><a href='..'>..</a></td></tr>"
-    mkAnker ('.':name) = return ""
+    path = unescape _path
+    currentDirectory = root ++ path
+    mkTable x = "<table>" ++ x ++ "</table>"
+    mkTBody xs = "<tbody>" ++ unlines xs ++ "</tbody>"
+    mkTHead x = "<thead><th>" ++ x ++ "</th></thead>"
+    column link title =
+      "<tr><td><a href='" ++ link ++ "'>" ++ title ++ "</a></td></tr>"
+    imgTag x = "<img style='max-height: 20;' src='" ++ x ++ "'>"
+    directory_icon = imgTag "/.img/icon_directory.jpeg"
+    pdf_icon = imgTag "/.img/icon_pdf.jpeg"
+    mkAnker ".." = return . Just $ column ".." "🔙"
+    mkAnker ('.':_name) = return $ Just ""
     mkAnker _name = do
       let name = unescape _name
-      exist <- doesFileExist name
-      return $ "<tr><td><a href='" ++ name ++ "'>" ++ name ++ "</a></td></tr>"
+          filepath = currentDirectory ++ "/" ++ name
+      print (_name, name, root, filepath)
+      isFile <- D.doesFileExist filepath
+      isDirectory <- D.doesDirectoryExist filepath
+      return $ if
+        | isDirectory ->
+            Just $ column name (directory_icon ++ name)
+        | isFile ->
+            let title = case Tool.getFileExt name of
+                          Just "pdf" -> pdf_icon ++ name
+                          _ -> name
+            in Just $ column name title
+        | otherwise ->
+            trace _name Nothing
 
 ----------------------------------
 -- hoge/     -> hoge/index.html
@@ -191,7 +214,7 @@ redirect conn path = do
   print path
   sendMany conn $ map C.pack [ "Location: ", path, "/\r\n\r\n" ]
   `catch`
-    (\(SomeException e) -> print e)
+    (\(SomeException e) -> errorlog e "redirect")
   `finally`
     close conn -- >> putStrLn ("close conn " ++ show conn)
 
@@ -200,7 +223,7 @@ sender st conn ct msg = do
   sendHeader conn st ct (C.length msg)
   sendMany conn [ C.pack "\r\n", msg, C.pack "\r\n" ]
   `catch`
-    (\(SomeException e) -> print e)
+    (\(SomeException e) -> errorlog e "sender")
   `finally`
     close conn -- >> putStrLn ("close conn " ++ show conn)
 
@@ -216,7 +239,7 @@ apisender st conn routing endpoint qry mtd bdy = do
           fmap B8.encodeString (func qry bdy)
   sendMany conn $ map C.pack [ h, c, "\r\n" ]
   `catch`
-    (\(SomeException e) -> print e)
+    (\(SomeException e) -> errorlog e "apisender")
   `finally`
     close conn -- >> putStrLn ("close conn " ++ show conn)
 
@@ -248,4 +271,3 @@ rlookup _ [] = Nothing
 rlookup me@(mtd, ep) ((x@(mtd',ep',_,_)):xs)
   | mtd == mtd' && ep == ep' = Just x
   | otherwise                = rlookup me xs
-

@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards, BangPatterns #-}
 module Web.Haskyapi.Config.Parser (
   sparser,
   A (..),
@@ -15,7 +14,7 @@ sptab = many (oneOf " \t")
 nt = oneOf "\n" *> (oneOf "\t" <|> char ' ' *> char ' ')
 
 sparser :: String -> String -> Either ParseError [A]
-sparser name str = parse (_sparser []) name str
+sparser = parse (_sparser [])
   where
     _sparser l = do
       sharp
@@ -43,8 +42,7 @@ hyphens = _hyphens []
 
 hyphen = do
   char '-' *> sptab
-  a <- arrow
-  return a
+  arrow
 
 sharp =
   try

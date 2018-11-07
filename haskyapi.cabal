@@ -1,8 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.20.0.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3b909307148be9caa35a1053e4ccbd451d0286afc07e8c70511815d2f50dffdc
+-- hash: aba8669b986508349412c09f53560b4cc43cf8d2618cf232f3400e7cd9ebe509
 
 name:           haskyapi
 version:        0.0.0.2
@@ -17,8 +19,6 @@ copyright:      2017 okue
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
-
 extra-source-files:
     README.md
 
@@ -29,6 +29,7 @@ source-repository head
 library
   hs-source-dirs:
       src
+  ghc-options: -W
   build-depends:
       aeson
     , base >=4.7 && <5

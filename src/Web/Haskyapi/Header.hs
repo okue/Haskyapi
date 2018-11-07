@@ -197,4 +197,3 @@ toCType "txt"   = Cplain
 toCType "text"  = Cplain
 toCType "json"  = Cjson
 toCType  _      = Cplain
-

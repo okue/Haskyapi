@@ -42,6 +42,8 @@ library:
   - Web.Haskyapi.Config.Defaults
   - Web.Haskyapi.Config.Parser
   # - Web.Haskyapi.Config.Config
+  ghc-options:
+  - -W
 
 executables:
   haskyapi:

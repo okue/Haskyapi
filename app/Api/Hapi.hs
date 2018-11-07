@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE MultiWayIf #-}
 module Api.Hapi (
   routing,

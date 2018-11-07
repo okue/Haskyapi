@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiWayIf, BangPatterns#-}
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings, LambdaCase #-}
 module Web.Haskyapi.Config.Config (
   domain,
