@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings #-} 
 module Web.Haskyapi (
   runServer,
   Port
@@ -34,6 +34,15 @@ import Web.Haskyapi.Header
 
 type Port = String
 
+data Status = OK
+            | NotFound
+            | Moved
+
+instance Show Status where
+  show OK       = "200 OK"
+  show NotFound = "404 Not Found"
+  show Moved    = "301 Moved Permanently"
+
 jst :: TimeZone
 jst = TimeZone {
         timeZoneMinutes = 540,
@@ -60,29 +69,10 @@ startSocket soc cf = forever $ do
   (conn, _addr) <- Net.accept soc
   forkIO $ doResponse conn cf
 
-data Status = OK
-            | NotFound
-            | Moved
-
-instance Show Status where
-  show OK       = "200 OK"
-  show NotFound = "404 Not Found"
-  show Moved    = "301 Moved Permanently"
-
-htmlhead :: String
-htmlhead = unlines [
-  "<head>",
-  "<link rel='icon' type='image/jpg' href='.icon.ico'>",
-  "<link rel='stylesheet' href='/css/markdown.css' type='text/css'/>",
-  "<link rel='stylesheet' href='https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css' type='text/css'/>",
-  "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>",
-  "<style>.markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; } @media (max-width: 767px) {.markdown-body}</style>",
-  "</head>"
-  ]
-
-doResponse :: Net.Socket -> (FilePath,SubDomain,[Api]) -> IO ()
+doResponse :: Net.Socket -> (FilePath, SubDomain, [Api]) -> IO ()
 doResponse conn (root', subdomain, routing) = do
   (str, _) <- Net.recvFrom conn 2048
+
   let bdy =  last . L.splitOn "\r\n" $ C.unpack str
       hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd _trg qry = hRqLine hdr
@@ -92,36 +82,36 @@ doResponse conn (root', subdomain, routing) = do
              Nothing -> Chtml
              Just ex -> toCType ex
       root = root' ++ dlookup (cutSubdomain host) subdomain
-  -- print $ unwords $ map (show . ord) $ C.unpack str
 
   curTime <- show . utcToLocalTime jst <$> getCurrentTime
   printf "[%s] %s\n" curTime (show hdr)
+
   case (mtd, trg) of
-    (GET, "/") ->
-      (send OK conn Chtml =<< C.readFile (root ++ "/index.html"))
-      `catch` \(SomeException e) -> do
-        errorlog e "doResponse"
-        send NotFound conn ct =<< genFilerPage root "/."
-        -- send NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
-      apisend OK conn routing endpoint qry mtd bdy
+      apiSend OK conn routing endpoint qry mtd bdy
+    (GET, "/") -> do
+      content <- C.readFile (root ++ "/index.html")
+        `catch` \(SomeException e) -> do
+          errorlog e "doResponse"
+          genFilerPage root "/."
+      httpSend OK conn Chtml content
     (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
-          tmp <- T.readFile $ root ++ urlDecode cpath
-          send OK conn ct . markdown2html $ tmp
-        (_, Just cpath) -> send OK conn ct =<< C.readFile (root ++ urlDecode cpath)
-        (_, Nothing)    -> redirect conn path
-      `catch`
-        \(SomeException e) -> do
-          errorlog e "doResponse"
-          send NotFound conn ct =<< genFilerPage root (urlDecode path)
-          -- send NotFound conn ct $ C.pack "404 Not Found"
+          mdfile <- T.readFile $ root ++ urlDecode cpath
+          httpSend OK conn ct . markdown2html $ mdfile
+        (_, Just cpath) -> httpSend OK conn ct =<< C.readFile (root ++ urlDecode cpath)
+        (_, Nothing)    -> redirect conn (C.pack path)
+      `catch` \(SomeException e) -> do
+        errorlog e "doResponse"
+        httpSend NotFound conn ct =<< genFilerPage root (urlDecode path)
     (POST, _) ->
-      send OK conn ct $ C.pack "Please POST request to /api"
+      httpSend OK conn ct "Please POST request to /api"
     _ ->
-      send NotFound conn Chtml $ C.pack "404 Not Found"
+      httpSend NotFound conn Chtml "404 Not Found"
 
+-- % url encode -> utf8 -> internal encode
+urlDecode :: String -> String
 urlDecode = urlDecodeInternal ""
   where
     urlDecodeInternal acc ('%':c1:c2:ss) =
@@ -132,60 +122,40 @@ urlDecode = urlDecodeInternal ""
     urlDecodeInternal acc [] =
       B8.decodeString $ L.reverse acc
 
-markdown2html file =
-  let mdfile = renderHtml $ Md.markdown Md.def file
-      aux b = htmlhead ++ "<body class='markdown-body'>" ++ b ++ "</body>"
-  in C.pack . B8.encodeString . aux . T.unpack $ mdfile
+markdown2html :: T.Text -> C.ByteString
+markdown2html mdfile =
+  let html4md = renderHtml $ Md.markdown Md.def mdfile
+      aux b = T.unwords [head4md, "<body class='markdown-body'>",
+                         b, "</body>"]
+  in C.pack . B8.encodeString . T.unpack . aux $ html4md
 
+unescape :: String -> String
 unescape = unwords . L.splitOn "%20"
 
-head4table = "<head>\
-\<link rel='icon' type='image/jpg' href='.icon.ico'>\
-\<style type='text/css'>\
-\ table{\
-\   width: 100%;\
-\   border-collapse:collapse;\
-\   margin-left: 5;\
-\ }\
-\ td,th{\
-\   padding:10px;\
-\ }\
-\ th{\
-\   color:#fff;\
-\   background:#005ab3;\
-\ }\
-\ table tr:nth-child(odd){\
-\   background:#e6f2ff;\
-\ }\
-\ td{\
-\   border-bottom:2px solid #80bcff;\
-\ }\
-\</style>\
-\</head>"
-
-errorlog err funcName =
-  printf "<<%s error>> reason is %s\n" funcName (show err)
-
+genFilerPage :: FilePath -> FilePath -> IO C.ByteString
 genFilerPage root _path = do
   ls    <- D.getDirectoryContents currentDirectory
   alist <- catMaybes <$> mapM mkAnker (L.sort ls)
   return . C.pack . B8.encodeString $
-    head4table ++ mkTable (mkTHead path ++ mkTBody alist)
-  `catch`
-    \(SomeException e) -> do
-      errorlog e  "genFilerPage"
-      return $ C.pack "404 Not Found"
+    head4filertable ++ mkTable (mkTHead path ++ mkTBody alist)
+  `catch` \(SomeException e) -> do
+    errorlog e  "genFilerPage"
+    return "404 Not Found"
   where
     path = unescape _path
     currentDirectory = root ++ path
-    mkTable x = "<table>" ++ x ++ "</table>"
+
+    mkTable x  = "<table>" ++ x ++ "</table>"
     mkTBody xs = "<tbody>" ++ unlines xs ++ "</tbody>"
-    mkTHead x = "<thead><th>" ++ x ++ "</th></thead>"
-    column link title =
-      "<tr><td><a href='" ++ link ++ "'>" ++ title ++ "</a></td></tr>"
+    mkTHead x  = "<thead><th>" ++ x ++ "</th></thead>"
+
     imgTag x = "<img style='max-height: 20;' src='" ++ x ++ "'>"
     directory_icon = imgTag "/.img/icon_directory.jpeg"
     pdf_icon = imgTag "/.img/icon_pdf.jpeg"
+
+    column link title =
+      "<tr><td><a href='" ++ link ++ "'>" ++ title ++ "</a></td></tr>"
+
     mkAnker ".." = return . Just $ column ".." "🔙"
     mkAnker ('.':_name) = return $ Just ""
     mkAnker _name = do
@@ -219,27 +189,27 @@ complement path =
       | length (L.splitOn "." bn) > 1 -> Just path
       | otherwise -> Nothing
 
-redirect :: Net.Socket -> String -> IO ()
+redirect :: Net.Socket -> C.ByteString -> IO ()
 redirect conn path = do
   sendHeader conn Moved Chtml 0
-  sendMany conn [ "Location: ", path, "/\r\n\r\n" ]
+  Net.sendMany conn [ "Location: ", path, "/\r\n\r\n" ]
   `catch`
     (\(SomeException e) -> errorlog e "redirect")
   `finally`
-    Net.close conn -- >> putStrLn ("close conn " ++ show conn)
+    Net.close conn
 
-send :: Status -> Net.Socket -> ContentType -> C.ByteString -> IO ()
-send st conn ct msg = do
+httpSend :: Status -> Net.Socket -> ContentType -> C.ByteString -> IO ()
+httpSend st conn ct msg = do
   sendHeader conn st ct (C.length msg)
-  sendMany conn [ "\r\n", C.unpack msg, "\r\n" ]
+  Net.sendMany conn [ "\r\n", msg, "\r\n" ]
   `catch`
     (\(SomeException e) -> errorlog e "send")
   `finally`
-    Net.close conn -- >> putStrLn ("close conn " ++ show conn)
+    Net.close conn
 
-apisend :: Status -> Net.Socket -> [Api] -> Endpoint
-          -> Query -> Method -> Body -> IO ()
-apisend st conn routing endpoint qry mtd bdy = do
+apiSend :: Status -> Net.Socket -> [Api] -> Endpoint
+                  -> Query -> Method -> Body -> IO ()
+apiSend st conn routing endpoint qry mtd bdy = do
   let h = "Access-Control-Allow-Origin: *\r\n\r\n"
   c <- case rlookup (mtd, endpoint) routing of
         Nothing -> do
@@ -247,30 +217,29 @@ apisend st conn routing endpoint qry mtd bdy = do
           return "There is no valid api."
         Just (_,_,func,ct) -> do
           sendHeader conn st ct 0
-          fmap B8.encodeString (func qry bdy)
-  sendMany conn [ h, c, "\r\n" ]
+          fmap (C.pack . B8.encodeString) (func qry bdy)
+  Net.sendMany conn [h, c, "\r\n"]
   `catch`
-    (\(SomeException e) -> errorlog e "apisend")
+    (\(SomeException e) -> errorlog e "apiSend")
   `finally`
-    Net.close conn -- >> putStrLn ("close conn " ++ show conn)
+    Net.close conn
+
+cshow :: Show a => a -> C.ByteString
+cshow = C.pack . show
 
 sendHeader :: Net.Socket -> Status -> ContentType -> Int -> IO Int
 sendHeader conn st ct cl = do
-  Net.send conn . C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
-  case filter (== ct) [Cjpeg, Cpng, Cpdf] of
-    [] ->
-      sendMany conn [ "Content-Type: ", show ct, "; charset=utf-8\r\n" ]
-    _  ->
-      sendMany conn [
-        "Accept-Ranges:bytes\r\n",
-        "Content-Type: ", show ct, "\r\n" ]
+  Net.send conn $ C.unwords ["HTTP/1.1 ", cshow st, "\r\n"]
+  if ct `elem` [Cjpeg, Cpng, Cpdf] then
+    Net.sendMany conn [
+      "Accept-Ranges:bytes\r\n",
+      "Content-Type: ", cshow ct, "\r\n" ]
+  else
+    Net.sendMany conn ["Content-Type: ", cshow ct, "; charset=utf-8\r\n"]
   case cl of
     0 -> return ()
-    _ -> sendMany conn [ "Content-Length: ", show cl, "\r\n" ]
-  Net.send conn $ C.pack "Server: Haskyapi\r\n"
-
-sendMany conn lst =
-  Net.sendMany conn $ map C.pack lst
+    _ -> Net.sendMany conn ["Content-Length: ", cshow cl, "\r\n"]
+  Net.send conn "Server: Haskyapi\r\n"
 
 cutSubdomain :: String -> String
 cutSubdomain = head . L.splitOn "."
@@ -284,3 +253,49 @@ rlookup _ [] = Nothing
 rlookup me@(mtd, ep) ((x@(mtd',ep',_,_)):xs)
   | mtd == mtd' && ep == ep' = Just x
   | otherwise                = rlookup me xs
+
+errorlog :: Exception e => e -> String -> IO ()
+errorlog err funcName =
+  printf "<<%s error>> reason is %s\n" funcName (show err)
+
+head4md = "<head>\
+\<link rel='icon' type='image/jpg' href='.icon.ico'>\
+\<link rel='stylesheet' href='/css/markdown.css' type='text/css'/>\
+\<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no'>\
+\<style>\
+\ .markdown-body {\
+\   box-sizing: border-box;\
+\   min-width: 200px;\
+\   max-width: 980px;\
+\   margin: 0 auto;\
+\   padding: 45px;\
+\ }\
+\ @media (max-width: 767px) {\
+\   .markdown-body\
+\ }\
+\</style>\
+\</head>"
+
+head4filertable = "<head>\
+\<link rel='icon' type='image/jpg' href='.icon.ico'>\
+\<style type='text/css'>\
+\ table{\
+\   width: 100%;\
+\   border-collapse:collapse;\
+\   margin-left: 5;\
+\ }\
+\ td,th{\
+\   padding:10px;\
+\ }\
+\ th{\
+\   color:#fff;\
+\   background:#005ab3;\
+\ }\
+\ table tr:nth-child(odd){\
+\   background:#e6f2ff;\
+\ }\
+\ td{\
+\   border-bottom:2px solid #80bcff;\
+\ }\
+\</style>\
+\</head>"

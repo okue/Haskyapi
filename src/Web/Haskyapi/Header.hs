@@ -15,14 +15,14 @@ module Web.Haskyapi.Header (
   SubDomain,
 ) where
 
-import qualified Data.ByteString.Char8 as C
-import qualified Data.List.Split as S
+-- import qualified Data.ByteString.Char8 as C
+import qualified Data.List.Split as L
 import qualified Data.List as L
 import Data.List.Split (splitOn)
-import Data.Maybe
-import Control.Monad
+-- import Data.Maybe
+-- import Control.Monad
 
-import Debug.Trace (trace)
+-- import Debug.Trace (trace)
 
 type Domain    = String
 type SubDomain = [(String, String)]
@@ -103,7 +103,7 @@ unitheader = Header {
 
 mkqry :: String -> (Endpoint, Query)
 mkqry tmp =
-  let ep:qry' = S.splitOneOf "?&" tmp
+  let ep:qry' = L.splitOneOf "?&" tmp
       qry     = map (qsplit "") qry'
   in (ep, qry)
 

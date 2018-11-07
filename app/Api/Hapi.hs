@@ -67,4 +67,3 @@ add qry _ =
     (Nothing,_) -> "No value of x."
     (_,Nothing) -> "No value of y."
     (Just x, Just y) -> show $ read x + read y
-

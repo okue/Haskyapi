@@ -8,19 +8,19 @@ module Web.Haskyapi.Console.Cli (
   Mode(..),
 ) where
 
-import System.Directory (getCurrentDirectory, getDirectoryContents)
+import System.Directory (getDirectoryContents)
 import System.Environment (getArgs)
-import System.Exit
+-- import System.Exit
 import Control.Monad.State
 import Control.Applicative ((<$>))
-import qualified Data.List.Split as L
+-- import qualified Data.List.Split as L
 import qualified Data.List       as L
 import Data.Maybe (fromMaybe)
 import Data.Map ((!))
 
 import qualified Web.Haskyapi.Config.Config as Config
 import Web.Haskyapi.Config.Defaults (defs)
-import Web.Haskyapi (runServer, Port)
+import Web.Haskyapi (runServer)
 import Web.Haskyapi.Header (Api)
 
 
@@ -48,10 +48,10 @@ mode2str (Message   _) = "message"
 mode2str (Error     _) = "error"
 
 instance Functor Mode where
-  fmap f (Runserver x) = Runserver (f x)
-  fmap f (Migrate x)   = Migrate (f x)
-  fmap f (Message x)   = Message x
-  fmap _ (Error x)     = Error x
+  fmap f  (Runserver x) = Runserver (f x)
+  fmap f  (Migrate x)   = Migrate (f x)
+  fmap _f (Message x)   = Message x
+  fmap _  (Error x)     = Error x
 
 data Arg = Arg {
              key   :: [String],
@@ -121,16 +121,16 @@ argparse args =
       where
         argparse' :: [String] -> State (Mode [A]) ()
         argparse' [] = return ()
-        argparse' ("-h":_)        = modify $ \x -> Message $ mkHelp [(mode2str (mode []), argconf)]
-        argparse' ("--help":_)    = modify $ \x -> Message $ mkHelp [(mode2str (mode []), argconf)]
+        argparse' ("-h":_)        = modify $ \_ -> Message $ mkHelp [(mode2str (mode []), argconf)]
+        argparse' ("--help":_)    = modify $ \_ -> Message $ mkHelp [(mode2str (mode []), argconf)]
         argparse' [x]             = modify $ \_ -> Error ("error near " ++ x)
         argparse' (ag:x:xs) =
           case filter (elem ag . key) argconf of
             [a] -> modify (fmap ((name a, x):)) >> argparse' xs
-            _   -> modify $ \x -> Error ("invalid argument " ++ ag)
+            _   -> modify $ \_ -> Error ("invalid argument " ++ ag)
         a2optMain :: Mode [A] -> Mode Option
         a2optMain (Runserver as) = Runserver (a2opt as)
-        a2optMain (Migrate   as) = Migrate OptMigrate
+        a2optMain (Migrate  _as) = Migrate OptMigrate
         a2optMain (Message x)    = Message x
         a2optMain (Error x)      = Error x
         a2opt :: [A] -> Option
@@ -161,7 +161,7 @@ haskyapiM routing migrate = do
       putStrLn x
     Runserver opt ->
       mainProc opt
-    Migrate opt ->
+    Migrate _opt ->
       migrate
   where
     mainProc :: Option -> IO ()
@@ -191,12 +191,10 @@ haskyapiM routing migrate = do
             aux ('.':_) = False
             aux _ = True
 
-
-main :: IO ()
-main = do
-  print $ argparse ["runserver", "--root", "html"]
-  print $ argparse ["migrate", "--help"]
-  let Message a = argparse ["runserver", "--help"]
-  putStrLn a
-  print $ argparse ["migrate"]
-  print $ argparse ["-v"]
+-- main = do
+--   print $ argparse ["runserver", "--root", "html"]
+--   print $ argparse ["migrate", "--help"]
+--   let Message a = argparse ["runserver", "--help"]
+--   putStrLn a
+--   print $ argparse ["migrate"]
+--   print $ argparse ["-v"]
