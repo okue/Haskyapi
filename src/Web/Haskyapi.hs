@@ -13,7 +13,7 @@ import qualified Data.List         as L
 import qualified Text.Markdown     as Md
 import qualified Data.Text.Lazy    as T
 import qualified Data.Text.Lazy.IO as T
--- import Data.Char (ord)
+import Data.Char (ord, chr)
 import Data.Maybe (fromMaybe, catMaybes)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Data.Time.Clock (getCurrentTime)
@@ -105,19 +105,29 @@ doResponse conn (root', subdomain, routing) = do
     (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
-          tmp <- T.readFile $ root ++ cpath
+          tmp <- T.readFile $ root ++ urlDecode cpath
           sender OK conn ct . markdown2html $ tmp
-        (_, Just cpath) -> sender OK conn ct =<< C.readFile (root ++ cpath)
+        (_, Just cpath) -> sender OK conn ct =<< C.readFile (root ++ urlDecode cpath)
         (_, Nothing)    -> redirect conn path
       `catch`
         \(SomeException e) -> do
           errorlog e "doResponse"
-          sender NotFound conn ct =<< genFilerPage root path
+          sender NotFound conn ct =<< genFilerPage root (urlDecode path)
           -- sender NotFound conn ct $ C.pack "404 Not Found"
     (POST, _) ->
       sender OK conn ct $ C.pack "Please POST request to /api"
     _ ->
       sender NotFound conn Chtml $ C.pack "404 Not Found"
+
+urlDecode = urlDecodeInternal ""
+  where
+    urlDecodeInternal acc ('%':c1:c2:ss) =
+      let c = chr (read ("0x" ++ [c1, c2]) :: Int)
+      in urlDecodeInternal (c:acc) ss
+    urlDecodeInternal acc (c:ss) =
+      urlDecodeInternal (c:acc) ss
+    urlDecodeInternal acc [] =
+      B8.decodeString $ L.reverse acc
 
 markdown2html file =
   let mdfile = renderHtml $ Md.markdown Md.def file
