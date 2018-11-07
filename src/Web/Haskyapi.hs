@@ -4,27 +4,30 @@ module Web.Haskyapi (
   Port
 ) where
 
-import Network.Socket hiding (send, sendTo, recv, recvFrom)
-import Network.Socket.ByteString
+import qualified Network.Socket as Net hiding (send, sendTo, recv, recvFrom)
+import qualified Network.Socket.ByteString as Net
+
 import qualified Codec.Binary.UTF8.String as B8
 import qualified Data.ByteString.Char8    as C
-import qualified Data.List.Split   as L
-import qualified Data.List         as L
 import qualified Text.Markdown     as Md
 import qualified Data.Text.Lazy    as T
 import qualified Data.Text.Lazy.IO as T
-import Data.Char (ord, chr)
-import Data.Maybe (fromMaybe, catMaybes)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Data.Time.Clock (getCurrentTime)
 import Data.Time.LocalTime (utcToLocalTime, TimeZone(..))
+import Data.Time.Clock (getCurrentTime)
+
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
+
+import qualified Data.List.Split   as L
+import qualified Data.List         as L
+import Data.Maybe (fromMaybe, catMaybes)
+import Data.Char (chr)
+
 import qualified System.Directory as D
 import Text.Printf (printf)
-
-import Debug.Trace (trace)
+-- import Debug.Trace (trace)
 
 import qualified Web.Haskyapi.Tool as Tool
 import Web.Haskyapi.Header
@@ -41,20 +44,20 @@ jst = TimeZone {
 runServer :: (Port, FilePath, String, SubDomain, [Api]) -> IO ()
 runServer (port,root,ip,subdomain,routing) = do
   soc <- serveSocket ip port
-  listen soc 10
-  startSocket soc (root,subdomain,routing) `finally` close soc
+  Net.listen soc 10
+  startSocket soc (root,subdomain,routing) `finally` Net.close soc
 
-serveSocket :: String -> Port -> IO Socket
+serveSocket :: String -> Port -> IO Net.Socket
 serveSocket ip port = do
-  soc  <- socket AF_INET Stream defaultProtocol
-  addr <- inet_addr ip
-  setSocketOption soc ReusePort (read port)
-  bind soc (SockAddrInet (read port) addr)
+  soc  <- Net.socket Net.AF_INET Net.Stream Net.defaultProtocol
+  addr <- Net.inet_addr ip
+  Net.setSocketOption soc Net.ReusePort (read port)
+  Net.bind soc (Net.SockAddrInet (read port) addr)
   return soc
 
-startSocket :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
+startSocket :: Net.Socket -> (FilePath,SubDomain,[Api]) -> IO ()
 startSocket soc cf = forever $ do
-  (conn, _addr) <- accept soc
+  (conn, _addr) <- Net.accept soc
   forkIO $ doResponse conn cf
 
 data Status = OK
@@ -77,9 +80,9 @@ htmlhead = unlines [
   "</head>"
   ]
 
-doResponse :: Socket -> (FilePath,SubDomain,[Api]) -> IO ()
+doResponse :: Net.Socket -> (FilePath,SubDomain,[Api]) -> IO ()
 doResponse conn (root', subdomain, routing) = do
-  (str, _) <- recvFrom conn 2048
+  (str, _) <- Net.recvFrom conn 2048
   let bdy =  last . L.splitOn "\r\n" $ C.unpack str
       hdr = parse . L.splitOn "\r\n" $ C.unpack str
       RqLine mtd _trg qry = hRqLine hdr
@@ -95,29 +98,29 @@ doResponse conn (root', subdomain, routing) = do
   printf "[%s] %s\n" curTime (show hdr)
   case (mtd, trg) of
     (GET, "/") ->
-      (sender OK conn Chtml =<< C.readFile (root ++ "/index.html"))
+      (send OK conn Chtml =<< C.readFile (root ++ "/index.html"))
       `catch` \(SomeException e) -> do
         errorlog e "doResponse"
-        sender NotFound conn ct =<< genFilerPage root "/."
-        -- sender NotFound conn ct $ C.pack "404 Not Found"
+        send NotFound conn ct =<< genFilerPage root "/."
+        -- send NotFound conn ct $ C.pack "404 Not Found"
     (mtd, '/':'a':'p':'i':endpoint) ->
-      apisender OK conn routing endpoint qry mtd bdy
+      apisend OK conn routing endpoint qry mtd bdy
     (GET, path) ->
       case (ct, complement path) of
         (Cmarkdown, Just cpath) -> do
           tmp <- T.readFile $ root ++ urlDecode cpath
-          sender OK conn ct . markdown2html $ tmp
-        (_, Just cpath) -> sender OK conn ct =<< C.readFile (root ++ urlDecode cpath)
+          send OK conn ct . markdown2html $ tmp
+        (_, Just cpath) -> send OK conn ct =<< C.readFile (root ++ urlDecode cpath)
         (_, Nothing)    -> redirect conn path
       `catch`
         \(SomeException e) -> do
           errorlog e "doResponse"
-          sender NotFound conn ct =<< genFilerPage root (urlDecode path)
-          -- sender NotFound conn ct $ C.pack "404 Not Found"
+          send NotFound conn ct =<< genFilerPage root (urlDecode path)
+          -- send NotFound conn ct $ C.pack "404 Not Found"
     (POST, _) ->
-      sender OK conn ct $ C.pack "Please POST request to /api"
+      send OK conn ct $ C.pack "Please POST request to /api"
     _ ->
-      sender NotFound conn Chtml $ C.pack "404 Not Found"
+      send NotFound conn Chtml $ C.pack "404 Not Found"
 
 urlDecode = urlDecodeInternal ""
   where
@@ -188,19 +191,17 @@ genFilerPage root _path = do
     mkAnker _name = do
       let name = unescape _name
           filepath = currentDirectory ++ "/" ++ name
-      print (_name, name, root, filepath)
       isFile <- D.doesFileExist filepath
       isDirectory <- D.doesDirectoryExist filepath
       return $ if
         | isDirectory ->
-            Just $ column name (directory_icon ++ name)
+            Just $ column (name ++ "/") (directory_icon ++ name)
         | isFile ->
             let title = case Tool.getFileExt name of
                           Just "pdf" -> pdf_icon ++ name
                           _ -> name
             in Just $ column name title
-        | otherwise ->
-            trace _name Nothing
+        | otherwise -> Nothing
 
 ----------------------------------
 -- hoge/     -> hoge/index.html
@@ -218,27 +219,27 @@ complement path =
       | length (L.splitOn "." bn) > 1 -> Just path
       | otherwise -> Nothing
 
-redirect :: Socket -> String -> IO ()
+redirect :: Net.Socket -> String -> IO ()
 redirect conn path = do
   sendHeader conn Moved Chtml 0
-  print path
-  sendMany conn $ map C.pack [ "Location: ", path, "/\r\n\r\n" ]
+  sendMany conn [ "Location: ", path, "/\r\n\r\n" ]
   `catch`
     (\(SomeException e) -> errorlog e "redirect")
   `finally`
-    close conn -- >> putStrLn ("close conn " ++ show conn)
+    Net.close conn -- >> putStrLn ("close conn " ++ show conn)
 
-sender :: Status -> Socket -> ContentType -> C.ByteString -> IO ()
-sender st conn ct msg = do
+send :: Status -> Net.Socket -> ContentType -> C.ByteString -> IO ()
+send st conn ct msg = do
   sendHeader conn st ct (C.length msg)
-  sendMany conn [ C.pack "\r\n", msg, C.pack "\r\n" ]
+  sendMany conn [ "\r\n", C.unpack msg, "\r\n" ]
   `catch`
-    (\(SomeException e) -> errorlog e "sender")
+    (\(SomeException e) -> errorlog e "send")
   `finally`
-    close conn -- >> putStrLn ("close conn " ++ show conn)
+    Net.close conn -- >> putStrLn ("close conn " ++ show conn)
 
-apisender :: Status -> Socket -> [Api] -> Endpoint -> Query -> Method -> Body -> IO ()
-apisender st conn routing endpoint qry mtd bdy = do
+apisend :: Status -> Net.Socket -> [Api] -> Endpoint
+          -> Query -> Method -> Body -> IO ()
+apisend st conn routing endpoint qry mtd bdy = do
   let h = "Access-Control-Allow-Origin: *\r\n\r\n"
   c <- case rlookup (mtd, endpoint) routing of
         Nothing -> do
@@ -247,27 +248,29 @@ apisender st conn routing endpoint qry mtd bdy = do
         Just (_,_,func,ct) -> do
           sendHeader conn st ct 0
           fmap B8.encodeString (func qry bdy)
-  sendMany conn $ map C.pack [ h, c, "\r\n" ]
+  sendMany conn [ h, c, "\r\n" ]
   `catch`
-    (\(SomeException e) -> errorlog e "apisender")
+    (\(SomeException e) -> errorlog e "apisend")
   `finally`
-    close conn -- >> putStrLn ("close conn " ++ show conn)
+    Net.close conn -- >> putStrLn ("close conn " ++ show conn)
 
-sendHeader :: Socket -> Status -> ContentType -> Int -> IO Int
+sendHeader :: Net.Socket -> Status -> ContentType -> Int -> IO Int
 sendHeader conn st ct cl = do
-  send conn $ C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
+  Net.send conn . C.pack $ "HTTP/1.1 " ++ show st ++ "\r\n"
   case filter (== ct) [Cjpeg, Cpng, Cpdf] of
     [] ->
-      sendMany conn $ map C.pack [ "Content-Type: ", show ct, "; charset=utf-8\r\n" ]
+      sendMany conn [ "Content-Type: ", show ct, "; charset=utf-8\r\n" ]
     _  ->
-      sendMany conn $ map C.pack [
+      sendMany conn [
         "Accept-Ranges:bytes\r\n",
         "Content-Type: ", show ct, "\r\n" ]
   case cl of
     0 -> return ()
-    _ -> sendMany conn $ map C.pack [ "Content-Length: ", show cl, "\r\n" ]
-  send conn $ C.pack "Server: Haskyapi\r\n"
+    _ -> sendMany conn [ "Content-Length: ", show cl, "\r\n" ]
+  Net.send conn $ C.pack "Server: Haskyapi\r\n"
 
+sendMany conn lst =
+  Net.sendMany conn $ map C.pack lst
 
 cutSubdomain :: String -> String
 cutSubdomain = head . L.splitOn "."
