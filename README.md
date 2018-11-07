@@ -91,7 +91,7 @@ This is POST.
 
 ## Now
 
-Haskyapi works at [okue.site:80](http://okue.site/)
+Haskyapi works at [okue.site:80](http://okue.xyz/)
 
-- [/markdown-page.md](http://okue.site/markdown-page.md)
-- [/api/title?url=https://github.com/okue/Haskyapi](http://okue.site/api/title?url=https://github.com/okue/Haskyapi)
+- [/markdown-page.md](http://okue.xyz/markdown-page.md)
+- [/api/title?url=https://github.com/okue/Haskyapi](http://okue.xyz/api/title?url=https://github.com/okue/Haskyapi)
