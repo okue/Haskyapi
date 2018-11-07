@@ -81,8 +81,6 @@ This is POST.
 
 - [x] Open Markdown file
 - [ ] Use Database easily
-- [ ] Implement RESTful api easily
-- [ ] Automatic generator of api reference document
 - [ ] HTTPS
 
 ## Bash-completion
