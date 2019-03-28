@@ -11,7 +11,6 @@ Haskyapi is a HTTP server implemented in Haskell.
 ```sh
 $ stack build
 $ stack install
-$ haskyapi migrate
 $ haskyapi runserver --port 8080 --root .
 root: .
 listen on 8080
@@ -79,17 +78,8 @@ This is POST.
 
 ## TODO
 
-- [x] Open Markdown file
-- [ ] Use Database easily
 - [ ] HTTPS
 
 ## Bash-completion
 
 `.haskyapi.bash` is a bash-completion setting file for **haskyapi** command.
-
-## Now
-
-Haskyapi works at [okue.site:80](http://okue.xyz/)
-
-- [/markdown-page.md](http://okue.xyz/markdown-page.md)
-- [/api/title?url=https://github.com/okue/Haskyapi](http://okue.xyz/api/title?url=https://github.com/okue/Haskyapi)
