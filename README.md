@@ -1,5 +1,3 @@
-<img src="https://raw.githubusercontent.com/okue/Haskyapi/master/html/img/logo.png" width="60%">
-
 [![Build Status](https://travis-ci.org/okue/Haskyapi.svg?branch=master)](https://travis-ci.org/okue/Haskyapi)
 
 ## What is Haskyapi?
